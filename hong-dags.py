@@ -50,7 +50,6 @@ with DAG(
     image='bitnami/kubectl:latest',
     cmds=['kubectl', 'delete', 'sparkapplication', 'hongtt-spark-job', '-n', 'spark-jobs'],
     get_logs=True,
-    log_events=True,
     dag=dag
     )
    start >> t1 >> spark_sensor >> delete_task
