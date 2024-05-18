@@ -44,4 +44,11 @@ with DAG(
     kubernetes_conn_id='myk8s',
     dag=dag
     )
-   start >> t1 >> spark_sensor
+   delete_task = KubernetesPodOperator(
+    task_id='delete_spark_application',
+    namespace='spark-jobs',
+    image='bitnami/kubectl:latest',
+    cmds=['kubectl', 'delete', 'sparkapplication', 'hongtt-spark-job', '-n', 'spark-jobs'],
+    dag=dag
+    )
+   start >> t1 >> spark_sensor >> delete_task
