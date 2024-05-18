@@ -41,7 +41,7 @@ with DAG(
         task_id='check_spark_application_status',
         name='check-spark-application-status',
         namespace='spark-jobs',
-        image='ybitnami/kubectl',
+        image='bitnami/kubectl',
         cmds=['kubectl', 'get', 'sparkapplication', 'hongtt-spark-job-18', '-n', 'spark-jobs', '-o', "jsonpath='{.status.applicationState.state}'"],
         do_xcom_push=True
     )
