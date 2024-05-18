@@ -1,0 +1,46 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: hongtt-spark-job-18
+  namespace: spark-jobs
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: bibilon89/sparkreadfiles:1.0
+  imagePullPolicy: Always
+  mainApplicationFile: local:///app/readfile.py
+  sparkVersion: "3.1.1"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.0.0
+    serviceAccount: spark
+    envVars:
+      SQL_QUERY: "    SELECT u.Username, u.Identifier, u.`FirstName` as FirstName, u.`LastName` as LastName, l.`LoginEmail` as LoginEmail, a.`AccessCode` as AccessCode,
+                                   r.`OneTimePassword` as `OneTimePassword`, r.`RecoveryCode` as RecoveryCode, r.Department, r.Location
+                            FROM access_code a
+                            LEFT JOIN login_mail l ON a.Identifier = l.Identifier 
+                            LEFT JOIN recovery_code r ON a.Identifier = r.Identifier
+                            LEFT JOIN user u ON a.Identifier = u.Identifier"
+      FOLDER_PATH: "s3a://pbh-bucket/access-code.csv,s3a://pbh-bucket/login-mail.csv,s3a://pbh-bucket/recovery-code.csv,s3a://pbh-bucket/user.csv"
+      ACCESS_KEY: "GYHBUZJNWPBU84OFNB0W"
+      SECRET_KEY: "K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV"
+      END_POINT: "rook-ceph-rgw-pbh-store.rook-ceph.svc:80"
+      WRITE_PATH: "s3a://pbh2-bucket/join.parquet"
+  executor:
+    instances: 1
+    coreRequest: "1000m"
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.0.0
+  deps:
+    jars:
+      - https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
+      - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar
+      - https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
