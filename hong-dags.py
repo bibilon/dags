@@ -1,4 +1,3 @@
-
 from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
@@ -39,12 +38,10 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
-    get_spark_status = BashOperator(
+   get_spark_status = BashOperator(
     task_id='get_spark_status',
     bash_command="kubectl get sparkapplication hongtt-spark-job-18 -n spark-jobs -o=jsonpath={.status.applicationState.state}",
     xcom_push=True,
     dag=dag
 )
    start >> t1 >> get_spark_status
-    
-
