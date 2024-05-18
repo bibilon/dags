@@ -40,7 +40,7 @@ with DAG(
    spark_sensor = SparkKubernetesSensor(
     task_id='spark_sensor',
     namespace='spark-jobs',
-    application_name='hongtt-spark-job',
+    application_name='hongtt-spark-job-18',
     kubernetes_conn_id='myk8s',
     dag=dag
     )
@@ -48,7 +48,7 @@ with DAG(
     task_id='delete_spark_application',
     namespace='spark-jobs',
     image='bitnami/kubectl:latest',
-    cmds=['kubectl', 'delete', 'sparkapplication', 'hongtt-spark-job', '-n', 'spark-jobs'],
+    cmds=['kubectl', 'delete', 'sparkapplication', 'hongtt-spark-job-18', '-n', 'spark-jobs'],
     get_logs=True,
     dag=dag
     )
