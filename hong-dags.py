@@ -41,7 +41,7 @@ with DAG(
    get_spark_status = BashOperator(
     task_id='get_spark_status',
     bash_command="kubectl get sparkapplication hongtt-spark-job-18 -n spark-jobs -o=jsonpath={.status.applicationState.state}",
-    xcom_push=True,
+    do_xcom_push=True,
     dag=dag
     )
    start >> t1 >> get_spark_status
