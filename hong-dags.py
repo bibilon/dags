@@ -38,10 +38,12 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
-   get_spark_status = BashOperator(
-    task_id='get_spark_status',
-    bash_command="kubectl get sparkapplication hongtt-spark-job-18 -n spark-jobs -o=jsonpath={.status.applicationState.state}",
-    do_xcom_push=True,
-    dag=dag
+    check_status = KubernetesPodOperator(
+        task_id='check_spark_application_status',
+        name='check-spark-application-status',
+        namespace='spark-jobs',
+        image='ybitnami/kubectl',
+        cmds=['kubectl', 'get', 'sparkapplication', 'hongtt-spark-job-18', '-n', 'spark-jobs', '-o', "jsonpath='{.status.applicationState.state}'"],
+        do_xcom_push=True
     )
-   start >> t1 >> get_spark_status
+   start >> t1 >> check_status
