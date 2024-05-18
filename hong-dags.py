@@ -37,12 +37,11 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
-   check_status = KubernetesPodOperator(
-        task_id='check_spark_application_status',
-        name='check-spark-application-status',
-        namespace='spark-jobs',
-        image='bitnami/kubectl',
-        cmds=['kubectl', 'get', 'sparkapplication', 'hongtt-spark-job-18', '-n', 'spark-jobs', '-o', "jsonpath='{.status.applicationState.state}'"],
-        do_xcom_push=True
+   spark_sensor = SparkKubernetesSensor(
+    task_id='spark_sensor',
+    namespace='spark-jobs',
+    application_name='hongtt-spark-job-18',
+    kubernetes_conn_id='myk8s',
+    dag=dag
     )
-   start >> t1 >> check_status
+   start >> t1 >> spark_sensor
