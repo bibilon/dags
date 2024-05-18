@@ -40,7 +40,7 @@ with DAG(
    spark_sensor = SparkKubernetesSensor(
     task_id='spark_sensor',
     namespace='spark-jobs',
-    application_name='hongtt-spark-job',
+    application_name='sparkjob-read',
     kubernetes_conn_id='myk8s',
     dag=dag
     )
