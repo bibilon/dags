@@ -2,7 +2,6 @@ from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-from airflow.operators.bash_operator import BashOperator
 from airflow.models import Variable
 from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
@@ -38,7 +37,7 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
-    check_status = KubernetesPodOperator(
+   check_status = KubernetesPodOperator(
         task_id='check_spark_application_status',
         name='check-spark-application-status',
         namespace='spark-jobs',
