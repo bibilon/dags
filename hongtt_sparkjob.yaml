@@ -47,6 +47,6 @@ spec:
   sparkConf:
     "spark.eventLog.enabled": "true"
     "spark.eventLog.dir": "s3a://spark-log"
-    "spark.hadoop.fs.s3a.endpoint": "https://192.168.121.112:32119"
+    "spark.hadoop.fs.s3a.endpoint": "https://192.168.121.112:80"
     "spark.hadoop.fs.s3a.access.key": "GYHBUZJNWPBU84OFNB0W"
     "spark.hadoop.fs.s3a.secret.key": "K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV"
