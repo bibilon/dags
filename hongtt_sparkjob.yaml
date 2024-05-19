@@ -44,9 +44,4 @@ spec:
       - https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
       - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar
       - https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
-  sparkConf:
-    "spark.eventLog.enabled": "true"
-    "spark.eventLog.dir": "s3a://spark-log/"
-    "spark.hadoop.fs.s3a.endpoint": "http://192.168.121.112:32490"
-    "spark.hadoop.fs.s3a.access.key": "GYHBUZJNWPBU84OFNB0W"
-    "spark.hadoop.fs.s3a.secret.key": "K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV"
+
