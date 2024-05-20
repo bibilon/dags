@@ -16,7 +16,7 @@ default_args = {
     'retries': 1
 }
 with DAG(
-   'my-iiii-dag',
+   'thinhdv-dags',
    default_args=default_args,
    description='simple dag',
    schedule_interval=timedelta(days=1),
@@ -32,10 +32,24 @@ with DAG(
        depends_on_past=False,
        retries=0,
        namespace='spark-jobs',
-       application_file="read-paquet.yaml",
+       application_file="hongtt_sparkjob.yaml",
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
        dag=dag
    )
-   start >> t1
-    
+   spark_sensor = SparkKubernetesSensor(
+    task_id='spark_sensor',
+    namespace='spark-jobs',
+    application_name='hongtt-spark-job-18',
+    kubernetes_conn_id='myk8s',
+    dag=dag
+    )
+   delete_task = KubernetesPodOperator(
+    task_id='delete_spark_application',
+    namespace='spark-jobs',
+    image='bitnami/kubectl:latest',
+    cmds=['kubectl', 'delete', 'sparkapplication', 'hongtt-spark-job-18', '-n', 'spark-jobs'],
+    get_logs=True,
+    dag=dag
+    )
+   start >> t1 >> spark_sensor >> delete_task
