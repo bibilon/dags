@@ -130,6 +130,14 @@ with DAG(
        dag=dag
    )
 
+   branch_task_2 = BranchPythonOperator(
+       task_id='branch_task_2',
+       python_callable=decide_which_path,
+       provide_context=True,
+       op_kwargs={'upstream_task_id': 'previous_task_id'},
+       dag=dag
+   )
+
    handle_error_task = DummyOperator(
        task_id='handle_error',
        dag=dag
@@ -138,6 +146,6 @@ with DAG(
    start >> t1 >> spark_sensor_1 >> branch_task >> delete_task_1
    branch_task >> [t2, handle_error_task]
    t2 >> spark_sensor_2 >> branch_task >> delete_task_2
-   branch_task >> [t3, handle_error_task]
+   branch_task_2 >> [t3, handle_error_task]
    t3 >> spark_sensor_3 >> branch_task >>delete_task_3 >> end
    handle_error_task >> end
