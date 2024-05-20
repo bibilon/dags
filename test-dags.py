@@ -161,4 +161,5 @@ start >> t3 >> spark_sensor_3 >> delete_task_3 >> branching
 
 branching >> [dummy_fail_t1, dummy_fail_t2, dummy_fail_t3]
 
-[dummy_fail_t1, dummy_fail_t2, dummy_fail_t3] >> [trigger_fail_t1, trigger_fail_t2, trigger_fail_t3]
+for dummy_fail_task, trigger_fail_task in zip([dummy_fail_t1, dummy_fail_t2, dummy_fail_t3], [trigger_fail_t1, trigger_fail_t2, trigger_fail_t3]):
+    dummy_fail_task >> trigger_fail_task
