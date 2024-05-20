@@ -7,6 +7,9 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
+from kubernetes.client import models as k8s
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
+from airflow.operators.empty import EmptyOperator
 
 default_args = {
     'owner': 'airflow',
