@@ -29,7 +29,7 @@ def decide_which_path(**kwargs):
         return 'handle_error'
 
 with DAG(
-   'thinhdv-dags',
+   'test-dags',
    default_args=default_args,
    description='simple dag',
    schedule_interval=timedelta(days=1),
