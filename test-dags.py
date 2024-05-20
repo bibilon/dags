@@ -139,7 +139,7 @@ with DAG(
    )
 
    branch_task_3 = BranchPythonOperator(
-       task_id='branch_task_2',
+       task_id='branch_task_3',
        python_callable=decide_which_path,
        provide_context=True,
        op_kwargs={'upstream_task_id': 'previous_task_id'},
