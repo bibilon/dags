@@ -1,0 +1,103 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-pbh-test
+  namespace: spark-jobs
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: thinhdv1305/spark-pbh:17.0
+  imagePullPolicy: Always
+  mainApplicationFile: local:///opt/spark/work-dir/scripts/rp_sub_pre.py
+  sparkVersion: "3.5.0"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.0.0
+    serviceAccount: spark
+    envVars:
+      SQL_QUERY: "
+        SELECT
+          CAST(b.ACTION_AUDIT_ID AS DECIMAL(20,0)) AS ACTION_AUDIT_ID,
+          CAST(a.SUB_ID AS DECIMAL(15,0)) AS SUB_ID,
+          CAST(a.ISDN AS STRING) AS ISDN,
+          CAST(10000 AS DECIMAL(22,2)) AS PERCENT_BASE,
+          CAST(NULL AS STRING) AS SERIAL,
+          CAST(b.ISSUE_DATETIME AS DATE) AS ISSUE_DATETIME,
+          CAST(a.STA_DATETIME AS DATE) AS STA_DATETIME,
+          CAST(NULL AS DECIMAL(1,0)) AS CHECK_ISSUE_DATE,
+          CAST((SELECT MAX(REASON_CODE) FROM REASON WHERE REASON_ID = b.REASON_ID) AS STRING) AS REG_TYPE,
+          CAST(a.PRODUCT_CODE AS STRING) AS PRODUCT_CODE,
+          CAST(b.ACTION_CODE AS STRING) AS ACTION_CODE,
+          CAST(a.ACT_STATUS AS STRING) AS ACT_STATUS,
+          CAST(a.STATUS AS DECIMAL(1,0)) AS STATUS,
+          CAST(NULL AS DATE) AS CHECK_DATE,
+          CAST(NULL AS STRING) AS CHECK_STATUS,
+          CAST(NULL AS DECIMAL(1,0)) AS DOC_STATUS,
+          CAST(NULL AS STRING) AS ADDRESS,
+          CAST(NULL AS DATE) AS SALE_TRANS_DATE,
+          CAST(NULL AS STRING) AS REL_PRODUCT_CODE,
+          CAST(NULL AS STRING) AS CUST_NAME,
+          CAST(current_date() AS DATE) AS SUM_DATETIME,
+          CAST(NULL AS STRING) AS IP,
+          CAST(b.DESCRIPTION AS STRING) AS DESCRIPTION,
+          CAST(NULL AS STRING) AS SER_TRANS_ID,
+          CAST(NULL AS STRING) AS ISDN_TRANS,
+          CAST(NULL AS STRING) AS HLR_IMSI,
+          CAST((SELECT MAX(REASON_CODE) FROM REASON WHERE REASON_ID = b.REASON_ID) AS STRING) AS REASON_CODE,
+          CAST(NULL AS STRING) AS CHARGE_TYPE,
+          CAST(a.ID AS DECIMAL(25,0)) AS RP_SUB_MB_ACTION_PRE_ID,
+          CAST(b.SHOP_CODE AS STRING) AS SHOP_CODE_ACTION,
+          CAST(a.SHOP_CODE AS STRING) AS DEV_SHOP_CODE,
+          CAST(s.SHOP_ID AS DECIMAL(10,0)) AS SHOP_ID,
+          CAST(s.CHANNEL_TYPE_ID AS DECIMAL(10,0)) AS S_CHANNEL_TYPE_ID,
+          CAST(NULL AS DECIMAL(1,0)) AS IS_SHOP_1400,
+          CAST(NULL AS STRING) AS DEV_STAFF_CODE,
+          CAST(NULL AS DECIMAL) AS STAFF_MOBILE,
+          CAST(a.DEV_STAFF_ID AS DECIMAL(10,0)) AS STAFF_ID,
+          CAST(NULL AS DECIMAL(10,0)) AS ST_CHANNEL_TYPE_ID,
+          CAST(NULL AS DECIMAL(22,5)) AS ISDN_NUMBER,
+          CAST(NULL AS DECIMAL(10,0)) AS ITEM_ID,
+          CAST(NULL AS DECIMAL(22,5)) AS BONUS,
+          CAST(NULL AS DECIMAL(1,0)) AS ISCOLLECTED,
+          CAST(NULL AS DECIMAL(1,0)) AS IS_ADJUST,
+          CAST(NULL AS DECIMAL(1,0)) AS CUST_TYPE,
+          CAST(NULL AS DECIMAL(5,0)) AS DATA_TYPE,
+          CAST(NULL AS STRING) AS SALE_STAFF_CODE,
+          CAST('JOB_NAME_DAUNOI_00' AS STRING) AS JOB_NAME,
+          CAST(NULL AS DATE) AS SRC_ISSUE_DATETIME,
+          CAST(s.PROVINCE AS STRING) AS PROVINCE,
+          CAST(NULL AS STRING) AS SOURCE_JOB_NAME,
+          CAST(NULL AS DECIMAL) AS SOURCE_ROW_ID,
+          CAST(NULL AS STRING) AS OBJECT_TYPE,
+          CAST(NULL AS STRING) AS USER_TYPE,
+          CAST(NULL AS STRING) AS PROMOTION_CODE,
+          CAST(NULL AS DATE) AS ORG_ISSUE_DATETIME
+      FROM SUBSCRIBER a
+      JOIN ACTION_AUDIT b ON a.SUB_ID = b.PK_ID
+      LEFT JOIN SHOP s ON b.SHOP_CODE = s.SHOP_CODE
+      WHERE b.ACTION_CODE IN ('00','04');"
+      FOLDER_PATH: "s3a://pbh-test/SUBSCRIBER.csv,s3a://pbh-test/ACTION_AUDIT.csv,s3a://pbh-test/REASON.csv,s3a://pbh-test/SHOP.csv"
+      ACCESS_KEY: "GYHBUZJNWPBU84OFNB0W"
+      SECRET_KEY: "K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV"
+      END_POINT: "rook-ceph-rgw-pbh-store.rook-ceph.svc:80"
+      WRITE_PATH: "s3a://pbh-test/pbh.parquet"
+  executor:
+    instances: 1
+    coreRequest: "1000m"
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.0.0
+  deps:
+    jars:
+      - https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
+      - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
+      - https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
+      - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/3.3.4/hadoop-common-3.3.4.jar
+      - https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/23.2.0.0/ojdbc8-23.2.0.0.jar
