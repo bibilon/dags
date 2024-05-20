@@ -17,7 +17,7 @@ default_args = {
 }
 
 dag = DAG(
-    'thinhdv-dags',
+    'test-dags',
     default_args=default_args,
     description='simple dag',
     schedule_interval=timedelta(days=1),
