@@ -28,15 +28,8 @@ def decide_which_path(**kwargs):
     else:
         return 'handle_error'
 
-def trigger_error_dag(**kwargs):
-    execution_date = kwargs['execution_date']
-    return {
-        'trigger_dag_id': 'error_handling_dag',
-        'execution_date': execution_date,
-    }
-
 with DAG(
-   'test-dags',
+   'thinhdv-dags',
    default_args=default_args,
    description='simple dag',
    schedule_interval=timedelta(days=1),
@@ -137,14 +130,6 @@ with DAG(
        dag=dag
    )
 
-   trigger_error_dag_task = TriggerDagRunOperator(
-       task_id='trigger_error_dag_task',
-       trigger_dag_id='error_handling_dag',
-       python_callable=trigger_error_dag,
-       provide_context=True,
-       dag=dag
-   )
-
    handle_error_task = DummyOperator(
        task_id='handle_error',
        dag=dag
@@ -152,6 +137,5 @@ with DAG(
 
    start >> t1 >> spark_sensor_1 >> delete_task_1 >> branch_task
    branch_task >> [t2, handle_error_task]
-   t2 >> spark_sensor_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> delete_task_3 >> trigger_error_dag_task
-   trigger_error_dag_task >> end
+   t2 >> spark_sensor_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> delete_task_3 >> end
    handle_error_task >> end
