@@ -137,5 +137,7 @@ with DAG(
 
    start >> t1 >> spark_sensor_1 >> branch_task >> delete_task_1
    branch_task >> [t2, handle_error_task]
-   t2 >> spark_sensor_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> delete_task_3 >> end
+   t2 >> spark_sensor_2 >> branch_task >> delete_task_2
+   branch_task >> [t3, handle_error_task]
+   t3 >> spark_sensor_3 >> branch_task >>delete_task_3 >> end
    handle_error_task >> end
