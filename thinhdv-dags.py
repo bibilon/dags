@@ -27,7 +27,7 @@ with DAG(
 ) as dag:
    start = EmptyOperator(task_id="start")
    t1 = SparkKubernetesOperator(
-       task_id='load_RP_SUB_PRE'
+       task_id='load_RP_SUB_PRE',
        retries=0,
        namespace='spark-jobs',
        application_file="rp_sub_pre.yaml",
@@ -51,7 +51,7 @@ with DAG(
     dag=dag
     )
    t2 = SparkKubernetesOperator(
-       task_id='load_COMM_RP'
+       task_id='load_COMM_RP',
        retries=0,
        namespace='spark-jobs',
        application_file="comm_rp.yaml",
@@ -75,7 +75,7 @@ with DAG(
     dag=dag
     )
    t3 = SparkKubernetesOperator(
-       task_id='update_phi'
+       task_id='update_phi',
        retries=0,
        namespace='spark-jobs',
        application_file="pbh.yaml",
