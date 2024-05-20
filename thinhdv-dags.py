@@ -36,14 +36,14 @@ with DAG(
        dag=dag
    )
    spark_sensor_1 = SparkKubernetesSensor(
-    task_id='spark_sensor',
+    task_id='spark_sensor_spark_load_rp_sub_pre',
     namespace='spark-jobs',
     application_name='spark-load-rp-sub-pre',
     kubernetes_conn_id='myk8s',
     dag=dag
     )
    delete_task_1 = KubernetesPodOperator(
-    task_id='delete_spark_application',
+    task_id='delete_spark_application_load_rp_sub_pre',
     namespace='spark-jobs',
     image='bitnami/kubectl:latest',
     cmds=['kubectl', 'delete', 'sparkapplication', 'spark-load-rp-sub-pre', '-n', 'spark-jobs'],
@@ -60,14 +60,14 @@ with DAG(
        dag=dag
    )
    spark_sensor_2 = SparkKubernetesSensor(
-    task_id='spark_sensor',
+    task_id='spark_sensor_load_COMM_RP',
     namespace='spark-jobs',
     application_name='spark-comm-rp',
     kubernetes_conn_id='myk8s',
     dag=dag
     )
    delete_task_2 = KubernetesPodOperator(
-    task_id='delete_spark_application',
+    task_id='delete_spark_application_load_COMM_RP',
     namespace='spark-jobs',
     image='bitnami/kubectl:latest',
     cmds=['kubectl', 'delete', 'sparkapplication', 'spark-comm-rp', '-n', 'spark-jobs'],
@@ -84,14 +84,14 @@ with DAG(
        dag=dag
    )
    spark_sensor_3 = SparkKubernetesSensor(
-    task_id='spark_sensor',
+    task_id='spark_sensor_update_phi',
     namespace='spark-jobs',
     application_name='spark-update-phi',
     kubernetes_conn_id='myk8s',
     dag=dag
     )
    delete_task_3 = KubernetesPodOperator(
-    task_id='delete_spark_application',
+    task_id='delete_spark_application_update_phi',
     namespace='spark-jobs',
     image='bitnami/kubectl:latest',
     cmds=['kubectl', 'delete', 'sparkapplication', 'spark-update-phi', '-n', 'spark-jobs'],
