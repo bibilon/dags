@@ -1,12 +1,12 @@
 from airflow import DAG
 from datetime import timedelta, datetime
+from airflow.operators.dummy import DummyOperator
+from airflow.operators.python_operator import BranchPythonOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
+from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
-from kubernetes.client import models as k8s
-from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
-from airflow.operators.python_operator import BranchPythonOperator
-from airflow.operators.dummy_operator import DummyOperator
 
 default_args = {
     'owner': 'airflow',
@@ -17,18 +17,20 @@ default_args = {
     'retries': 1
 }
 
-def decide_branch(**kwargs):
-    ti = kwargs['ti']
-    failed_tasks = []
-    for task in ['load_RP_SUB_PRE', 'load_COMM_RP', 'update_phi']:
-        task_instance = ti.xcom_pull(task_ids=task, key='return_value')
-        if task_instance:
-            if task_instance.state == 'failed':
-                failed_tasks.append(task)
-    if failed_tasks:
-        return failed_tasks
+def decide_which_path(**kwargs):
+    task_instance = kwargs['task_instance']
+    previous_task_status = task_instance.xcom_pull(task_ids=kwargs['upstream_task_id'])
+    if previous_task_status == "success":
+        return 'continue_next_task'
     else:
-        return 'success'
+        return 'handle_error'
+
+def trigger_error_dag(**kwargs):
+    execution_date = kwargs['execution_date']
+    return {
+        'trigger_dag_id': 'error_handling_dag',
+        'execution_date': execution_date,
+    }
 
 with DAG(
    'test-dags',
@@ -41,6 +43,8 @@ with DAG(
    template_searchpath='/opt/airflow/dags/repo/'
 ) as dag:
    start = DummyOperator(task_id="start")
+   end = DummyOperator(task_id="end")
+
    t1 = SparkKubernetesOperator(
        task_id='load_RP_SUB_PRE',
        retries=0,
@@ -50,13 +54,15 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
+   
    spark_sensor_1 = SparkKubernetesSensor(
     task_id='spark_sensor_spark_load_rp_sub_pre',
     namespace='spark-jobs',
     application_name='spark-load-rp-sub-pre',
     kubernetes_conn_id='myk8s',
     dag=dag
-    )
+   )
+
    delete_task_1 = KubernetesPodOperator(
     task_id='delete_spark_application_load_rp_sub_pre',
     namespace='spark-jobs',
@@ -64,7 +70,8 @@ with DAG(
     cmds=['kubectl', 'delete', 'sparkapplication', 'spark-load-rp-sub-pre', '-n', 'spark-jobs'],
     get_logs=True,
     dag=dag
-    )
+   )
+   
    t2 = SparkKubernetesOperator(
        task_id='load_COMM_RP',
        retries=0,
@@ -74,13 +81,15 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
+   
    spark_sensor_2 = SparkKubernetesSensor(
     task_id='spark_sensor_load_COMM_RP',
     namespace='spark-jobs',
     application_name='spark-comm-rp',
     kubernetes_conn_id='myk8s',
     dag=dag
-    )
+   )
+
    delete_task_2 = KubernetesPodOperator(
     task_id='delete_spark_application_load_COMM_RP',
     namespace='spark-jobs',
@@ -88,7 +97,8 @@ with DAG(
     cmds=['kubectl', 'delete', 'sparkapplication', 'spark-comm-rp', '-n', 'spark-jobs'],
     get_logs=True,
     dag=dag
-    )
+   )
+   
    t3 = SparkKubernetesOperator(
        task_id='update_phi',
        retries=0,
@@ -98,13 +108,15 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
+   
    spark_sensor_3 = SparkKubernetesSensor(
     task_id='spark_sensor_update_phi',
     namespace='spark-jobs',
     application_name='spark-update-phi',
     kubernetes_conn_id='myk8s',
     dag=dag
-    )
+   )
+
    delete_task_3 = KubernetesPodOperator(
     task_id='delete_spark_application_update_phi',
     namespace='spark-jobs',
@@ -112,12 +124,31 @@ with DAG(
     cmds=['kubectl', 'delete', 'sparkapplication', 'spark-update-phi', '-n', 'spark-jobs'],
     get_logs=True,
     dag=dag
-    )
-   branch = BranchPythonOperator(
-       task_id='decide_branch',
-       python_callable=decide_branch,
-       provide_context=True
    )
-   success = DummyOperator(task_id='success')
-   start >> t1 >> spark_sensor_1 >> delete_task_1 >> t2 >> spark_sensor_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> delete_task_3 >> success
-   branch >> [t1, t2, t3] >> success
+
+   branch_task = BranchPythonOperator(
+       task_id='branch_task',
+       python_callable=decide_which_path,
+       provide_context=True,
+       op_kwargs={'upstream_task_id': 'previous_task_id'},
+       dag=dag
+   )
+
+   trigger_error_dag_task = TriggerDagRunOperator(
+       task_id='trigger_error_dag_task',
+       trigger_dag_id='error_handling_dag',
+       python_callable=trigger_error_dag,
+       provide_context=True,
+       dag=dag
+   )
+
+   handle_error_task = DummyOperator(
+       task_id='handle_error',
+       dag=dag
+   )
+
+   start >> t1 >> spark_sensor_1 >> delete_task_1 >> branch_task
+   branch_task >> [t2, handle_error_task]
+   t2 >> spark_sensor_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> delete_task_3 >> trigger_error_dag_task
+   trigger_error_dag_task >> end
+   handle_error_task >> end
