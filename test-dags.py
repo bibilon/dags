@@ -75,8 +75,6 @@ with DAG(
     application_name='spark-load-rp-sub-pre',
     kubernetes_conn_id='myk8s',
     on_success_callback=on_success_callback,
-    do_xcom_push=True, 
-    dag=dag
    )
 
    delete_task_1 = KubernetesPodOperator(
