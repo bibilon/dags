@@ -33,8 +33,8 @@ def decide_which_path(**kwargs):
 def push_sensor_status_to_xcom(**kwargs):
     task_instance = kwargs['task_instance']
     sensor_task_id = kwargs['sensor_task_id']
-    application_name = kwargs['application_name']
-    status = task_instance.xcom_pull(task_ids=sensor_task_id)
+    sensor_status = task_instance.xcom_pull(task_ids=sensor_task_id)
+    logging.info(f"Status of {sensor_task_id}: {sensor_status}")
     task_instance.xcom_push(key='return_value', value=sensor_status)
         
 with DAG(
@@ -73,8 +73,7 @@ with DAG(
         python_callable=push_sensor_status_to_xcom,
         provide_context=True,
         op_kwargs={
-            'sensor_task_id': 'spark_sensor_spark_load_rp_sub_pre',
-            'application_name': 'spark-load-rp-sub-pre'
+            'sensor_task_id': 'spark_sensor_spark_load_rp_sub_pre'
         },
         dag=dag
     )
