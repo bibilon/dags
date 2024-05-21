@@ -141,7 +141,7 @@ with DAG(
     dag=dag
    )
 
-    branch_task = BranchPythonOperator(
+   branch_task = BranchPythonOperator(
         task_id='branch_task',
         python_callable=decide_which_path,
         provide_context=True,
