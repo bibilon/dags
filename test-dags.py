@@ -173,7 +173,7 @@ with DAG(
        dag=dag
    )
 
-   start >> t1 >> spark_sensor_1 >> push_sensor_1_status >> branch_task >> delete_task_1 >> t2 >> spark_sensor_2 >> branch_task_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> branch_task_3 >> delete_task_3 >> end
+   start >> t1 >> spark_sensor_1 >> branch_task >> delete_task_1 >> t2 >> spark_sensor_2 >> branch_task_2 >> delete_task_2 >> t3 >> spark_sensor_3 >> branch_task_3 >> delete_task_3 >> end
    branch_task >> handle_error_task
    branch_task_2 >> handle_error_task
    branch_task_3 >> handle_error_task
