@@ -10,7 +10,7 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(1),
+    'start_date': datetime(2024, 3, 12),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1
@@ -21,7 +21,7 @@ def push_sensor_status(**kwargs):
     ti.xcom_push(key='return_value', value='success')
 
 with DAG(
-    'test_dags',
+    'branch_dags',
     default_args=default_args,
     description='A test DAG for SparkKubernetesSensor and XCom',
     schedule_interval=timedelta(days=1),
