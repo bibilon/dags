@@ -30,12 +30,11 @@ def decide_which_path(**kwargs):
     else:
         return 'handle_error'
         
-def push_sensor_status_to_xcom(**kwargs):
+def push_sensor_status_to_xcom(sensor_task_id, **kwargs):
     task_instance = kwargs['task_instance']
-    sensor_task_id = kwargs['sensor_task_id']
     sensor_status = task_instance.xcom_pull(task_ids=sensor_task_id)
     logging.info(f"Status of {sensor_task_id}: {sensor_status}")
-    task_instance.xcom_push(key='return_value', value=sensor_status)
+    task_instance.xcom_push(key='status', value=sensor_status)
         
 with DAG(
    'test-dags',
@@ -65,6 +64,7 @@ with DAG(
     namespace='spark-jobs',
     application_name='spark-load-rp-sub-pre',
     kubernetes_conn_id='myk8s',
+    do_xcom_push=True, 
     dag=dag
    )
 
@@ -141,13 +141,13 @@ with DAG(
     dag=dag
    )
 
-   branch_task = BranchPythonOperator(
-       task_id='branch_task',
-       python_callable=decide_which_path,
-       provide_context=True,
-       op_kwargs={'upstream_task_id': 'spark_sensor_spark_load_rp_sub_pre'},
-       dag=dag
-   )
+    branch_task = BranchPythonOperator(
+        task_id='branch_task',
+        python_callable=decide_which_path,
+        provide_context=True,
+        op_kwargs={'upstream_task_id': 'push_sensor_1_status', 'delete_task_id': 'delete_spark_application_load_rp_sub_pre'},
+        dag=dag
+    )
 
    branch_task_2 = BranchPythonOperator(
        task_id='branch_task_2',
