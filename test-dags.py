@@ -126,7 +126,7 @@ with DAG(
        task_id='branch_task',
        python_callable=decide_which_path,
        provide_context=True,
-       op_kwargs={'upstream_task_id': 'previous_task_id'},
+       op_kwargs={'upstream_task_id': 'load_RP_SUB_PRE'},
        dag=dag
    )
 
@@ -134,7 +134,7 @@ with DAG(
        task_id='branch_task_2',
        python_callable=decide_which_path,
        provide_context=True,
-       op_kwargs={'upstream_task_id': 'previous_task_id'},
+       op_kwargs={'upstream_task_id': 'load_COMM_RP'},
        dag=dag
    )
 
@@ -142,7 +142,7 @@ with DAG(
        task_id='branch_task_3',
        python_callable=decide_which_path,
        provide_context=True,
-       op_kwargs={'upstream_task_id': 'previous_task_id'},
+       op_kwargs={'upstream_task_id': 'update_phi'},
        dag=dag
    )
 
