@@ -20,19 +20,27 @@ default_args = {
     'retries': 1
 }
 
-import logging
 def decide_which_path(**kwargs):
     task_instance = kwargs['task_instance']
     previous_task_status = task_instance.xcom_pull(task_ids=kwargs['upstream_task_id'])
-    logging.info(f"Previous task status: {previous_task_status}")
     if previous_task_status == "success":
         return 'delete_spark_application_load_rp_sub_pre'
     else:
         return 'handle_error'
-        
-def push_sensor_status(**kwargs):
-    ti = kwargs['ti']
-    ti.xcom_push(key='return_value', value='success')
+def decide_which_path2(**kwargs):
+    task_instance = kwargs['task_instance']
+    previous_task_status = task_instance.xcom_pull(task_ids=kwargs['upstream_task_id'])
+    if previous_task_status == "success":
+        return 'delete_spark_application_load_COMM_RP'
+    else:
+        return 'handle_error'
+def decide_which_path3(**kwargs):
+    task_instance = kwargs['task_instance']
+    previous_task_status = task_instance.xcom_pull(task_ids=kwargs['upstream_task_id'])
+    if previous_task_status == "success":
+        return 'delete_spark_application_update_phi'
+    else:
+        return 'handle_error'
         
 with DAG(
    'test-dags',
@@ -71,12 +79,6 @@ with DAG(
     dag=dag
    )
 
-   push_sensor_1_status = PythonOperator(
-        task_id='push_sensor_1_status',
-        python_callable=push_sensor_status,
-        provide_context=True,
-    )
-
    delete_task_1 = KubernetesPodOperator(
     task_id='delete_spark_application_load_rp_sub_pre',
     namespace='spark-jobs',
@@ -101,6 +103,7 @@ with DAG(
     namespace='spark-jobs',
     application_name='spark-comm-rp',
     kubernetes_conn_id='myk8s',
+    on_success_callback=on_success_callback,
     dag=dag
    )
 
@@ -128,6 +131,7 @@ with DAG(
     namespace='spark-jobs',
     application_name='spark-update-phi',
     kubernetes_conn_id='myk8s',
+    on_success_callback=on_success_callback,
     dag=dag
    )
 
@@ -144,13 +148,13 @@ with DAG(
         task_id='branch_task',
         python_callable=decide_which_path,
         provide_context=True,
-        op_kwargs={'upstream_task_id': 'push_sensor_1_status'},
+        op_kwargs={'upstream_task_id': 'spark_sensor_spark_load_rp_sub_pre'},
         dag=dag
     )
 
    branch_task_2 = BranchPythonOperator(
        task_id='branch_task_2',
-       python_callable=decide_which_path,
+       python_callable=decide_which_path2,
        provide_context=True,
        op_kwargs={'upstream_task_id': 'spark_sensor_load_COMM_RP'},
        dag=dag
@@ -158,7 +162,7 @@ with DAG(
 
    branch_task_3 = BranchPythonOperator(
        task_id='branch_task_3',
-       python_callable=decide_which_path,
+       python_callable=decide_which_path3,
        provide_context=True,
        op_kwargs={'upstream_task_id': 'spark_sensor_update_phi'},
        dag=dag
