@@ -23,6 +23,7 @@ default_args = {
 def decide_which_path(**kwargs):
     task_instance = kwargs['task_instance']
     previous_task_status = task_instance.xcom_pull(task_ids=kwargs['upstream_task_id'])
+    print(f"Previous task status: {previous_task_status}")
     if previous_task_status == "success":
         return 'delete_spark_application_load_rp_sub_pre'
     else:
