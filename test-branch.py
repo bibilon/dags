@@ -1,11 +1,15 @@
 from airflow import DAG
 from datetime import timedelta, datetime
+from airflow.operators.dummy import DummyOperator
+from airflow.operators.python_operator import BranchPythonOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
+from airflow.operators.python_operator import PythonOperator
+from airflow.models import Variable
+from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
-from airflow.operators.dummy import DummyOperator
-from airflow.operators.python import BranchPythonOperator
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.operators.empty import EmptyOperator
 
 default_args = {
     'owner': 'airflow',
