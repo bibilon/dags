@@ -23,7 +23,7 @@ def push_sensor_status(ti):
     ti.xcom_push(key='return_value', value='success')
 
 with DAG(
-    'thinhdv-branch-dags',
+    'test-dags',
     default_args=default_args,
     description='simple dag',
     schedule_interval=timedelta(days=1),
@@ -35,6 +35,10 @@ with DAG(
 
     start = DummyOperator(task_id="start")
     end = DummyOperator(task_id="end")
+
+    handle_error_task = DummyOperator(task_id='handle_error')
+
+    prev_task = start
 
     tasks = [
         {
@@ -60,9 +64,6 @@ with DAG(
         }
     ]
 
-    handle_error_task = DummyOperator(task_id='handle_error')
-
-    prev_task = start
     for idx, task in enumerate(tasks):
         spark_task = SparkKubernetesOperator(
             task_id=task['task_id'],
@@ -108,4 +109,4 @@ with DAG(
 
         prev_task = delete_task
 
-    start >> tasks[0]['task_id']
+    start >> spark_task  # Ensure the first task is connected to the start
