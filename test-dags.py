@@ -35,11 +35,7 @@ def push_sensor_status_to_xcom(**kwargs):
     sensor_task_id = kwargs['sensor_task_id']
     application_name = kwargs['application_name']
     status = task_instance.xcom_pull(task_ids=sensor_task_id)
-    logging.info(f"Status of {application_name}: {status}")
-    if status == "completed":
-        task_instance.xcom_push(key='return_value', value="success")
-    else:
-        task_instance.xcom_push(key='return_value', value="failed")
+    task_instance.xcom_push(key='return_value', value=sensor_status)
         
 with DAG(
    'test-dags',
