@@ -23,7 +23,7 @@ def push_sensor_status(ti):
     ti.xcom_push(key='return_value', value='success')
 
 with DAG(
-    'test-dags',
+    'thinhdv-branch-dags',
     default_args=default_args,
     description='simple dag',
     schedule_interval=timedelta(days=1),
