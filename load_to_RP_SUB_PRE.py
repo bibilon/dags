@@ -20,6 +20,8 @@ default_args = {
     'retries': 1
 }
 
+default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
+
 def decide_which_path(**kwargs):
     task_instance = kwargs['task_instance']
     previous_task_status = task_instance.xcom_pull(task_ids=kwargs['upstream_task_id'])
