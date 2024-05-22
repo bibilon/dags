@@ -149,9 +149,9 @@ with DAG(
 
    wait_for_load_RP_SUB_PRE_dags = ExternalTaskSensor(
     task_id='wait_for_load_RP_SUB_PRE_dags',
-    external_dag_id='load_RP_SUB_PRE_dags',  # DAG ID của DAG mà bạn muốn đợi
-    mode='poke',  # Có thể sử dụng 'poke' hoặc 'reschedule'
-    timeout=600,  # Thời gian chờ tối đa (tính bằng giây)
+    external_dag_id='load_RP_SUB_PRE_dags', 
+    mode='poke',
+    timeout=600,
     dag=dag,
    )
 
