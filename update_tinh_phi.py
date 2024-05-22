@@ -45,7 +45,7 @@ with DAG(
    'update-tinh-phi-dags',
    default_args=default_args,
    description='simple dag',
-   schedule_interval='50 13 * * *',
+   schedule_interval='50 6 * * *',
    start_date=datetime(2024, 5, 20),
    catchup=False,
    tags=['example13'],
