@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.python_operator import BranchPythonOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
+from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.python_operator import PythonOperator
