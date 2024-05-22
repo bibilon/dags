@@ -125,14 +125,6 @@ with DAG(
     dag=dag
    )
 
-   branch_task = BranchPythonOperator(
-        task_id='branch_task',
-        python_callable=decide_which_path,
-        provide_context=True,
-        op_kwargs={'upstream_task_id': 'push_sensor_1_status'},
-        dag=dag
-    )
-
    branch_task_2 = BranchPythonOperator(
        task_id='branch_task_2',
        python_callable=decide_which_path2,
