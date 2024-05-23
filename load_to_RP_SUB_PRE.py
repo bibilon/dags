@@ -38,7 +38,7 @@ with DAG(
    'load_RP_SUB_PRE_dags',
    default_args=default_args,
    description='simple dag',
-   schedule_interval='50 6 * * *',
+   schedule_interval='45 3 * * *',
    start_date=datetime(2024, 5, 20),
    catchup=False,
    tags=['example13'],
