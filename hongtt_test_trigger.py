@@ -45,18 +45,6 @@ def trigger_notebook():
     else:
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
-#Ham check status cua notebook
-def check_response(response):
-    try:
-        data = response.json()
-        paragraphs = data['body']['paragraphs']
-        for paragraph in paragraphs:
-            if paragraph['status'] == 'ERROR':
-                return False  # Nếu có ít nhất một đoạn lỗi, trả về True
-        return True  # Nếu không có đoạn nào lỗi, trả về False
-    except Exception as e:
-        print("khong ket noi duoc")
-        return False  # Nếu có lỗi khi xử lý response, trả về True
 
 default_args = {
     'owner': 'airflow',
