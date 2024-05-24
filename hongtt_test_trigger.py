@@ -19,13 +19,17 @@ def trigger_notebook():
 #Ham check status cua notebook
 def check_response(response):
     try:
+        print("ket noi duoc")
         data = response.json()
         paragraphs = data['body']['paragraphs']
         for paragraph in paragraphs:
             if paragraph['status'] == 'ERROR':
+                print("loi")
                 return True  # Nếu có ít nhất một đoạn lỗi, trả về True
+        print("thanh cong")
         return False  # Nếu không có đoạn nào lỗi, trả về False
     except Exception as e:
+        print("khong ket noi duoc")
         return True  # Nếu có lỗi khi xử lý response, trả về True
 
 default_args = {
