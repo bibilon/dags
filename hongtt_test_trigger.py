@@ -12,7 +12,7 @@ class CustomHttpSensor(HttpSensor):
     @apply_defaults
     def __init__(self, *args, **kwargs):
         super(CustomHttpSensor, self).__init__(*args, **kwargs)
-
+        self.endpoint = endpoint
     def poke(self, context):
         response = self.get_response()
         return self.check_response(response)
