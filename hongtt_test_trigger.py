@@ -7,7 +7,7 @@ from requests.auth import HTTPBasicAuth
 
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
-    url = "http://192.168.121.112:31818/api/notebook/job/2K16648YJ"
+    url = "http://192.168.121.112:31818/api/notebook/job/2JYNTG8C2"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
