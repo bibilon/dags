@@ -16,6 +16,17 @@ def trigger_notebook():
     else:
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
+#Ham check status cua notebook
+def check_response(response):
+    try:
+        data = response.json()
+        paragraphs = data['body']['paragraphs']
+        for paragraph in paragraphs:
+            if paragraph['status'] == 'ERROR':
+                return True  # Nếu có ít nhất một đoạn lỗi, trả về True
+        return False  # Nếu không có đoạn nào lỗi, trả về False
+    except Exception as e:
+        return True  # Nếu có lỗi khi xử lý response, trả về True
 
 default_args = {
     'owner': 'airflow',
@@ -47,7 +58,7 @@ with DAG(
     http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
     endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
     request_params={},  # Các tham số yêu cầu (nếu có)
-    response_check=lambda response: response.json().get("status") == "FINISHED",  # Kiểm tra trạng thái FINISHED
+    response_check=check_response
     timeout=120,  # Thời gian chờ tối đa
     poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
     dag=dag
