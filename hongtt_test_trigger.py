@@ -8,7 +8,7 @@ from airflow.operators.sensors import HttpSensor
 
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
-    url = "http://192.168.121.112:31818/api/notebook/job/2JZJWKNQC"
+    url = "http://192.168.121.112:31818/api/notebook/job/2JX2D44RY"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
@@ -41,4 +41,15 @@ with DAG(
     python_callable=trigger_notebook,
     dag=dag
     )
-   start >> trigger_notebook_task 
+   sensor_task = HttpSensor(
+    task_id='zeppelin_notebook_sensor',
+    method='GET',
+    http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
+    endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
+    request_params={},  # Các tham số yêu cầu (nếu có)
+    response_check=lambda response: response.json().get("status") == "FINISHED",  # Kiểm tra trạng thái FINISHED
+    timeout=120,  # Thời gian chờ tối đa
+    poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
+    dag=dag
+    )
+   start >> trigger_notebook_task >> sensor_task
