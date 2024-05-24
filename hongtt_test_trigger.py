@@ -16,28 +16,28 @@ def trigger_notebook():
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
 
-# Tạo DAG
 default_args = {
+    'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 3, 12),
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    'retries': 1
 }
-
-dag = DAG(
-    'trigger_zeppelin_notebook',
-    default_args=default_args,
-    description='Trigger a Zeppelin notebook from Airflow',
-    schedule_interval=timedelta(days=1)
-)
-
-# Tạo task PythonOperator để trigger notebook
-trigger_notebook_task = PythonOperator(
+with DAG(
+   'trigger_zeppelin_notebook',
+   default_args=default_args,
+   description='simple dag',
+   schedule_interval=timedelta(days=1),
+   start_date=datetime(2024, 5, 16),
+   catchup=False,
+   tags=['example13'],
+   template_searchpath='/opt/airflow/dags/repo/'
+) as dag:
+   start = EmptyOperator(task_id="start")
+   trigger_notebook_task = PythonOperator(
     task_id='trigger_notebook',
     python_callable=trigger_notebook,
     dag=dag
-)
-
-trigger_notebook_task 
+    )
+   start >> trigger_notebook_task 
