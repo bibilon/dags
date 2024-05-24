@@ -3,7 +3,7 @@ from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 import requests
 from requests.auth import HTTPBasicAuth
-
+from airflow.operators.empty import EmptyOperator
 
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
