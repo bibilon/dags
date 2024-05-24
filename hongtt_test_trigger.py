@@ -7,7 +7,7 @@ from airflow.operators.empty import EmptyOperator
 
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
-    url = "http://192.168.121.112:31818/api/notebook/job/2JYNTG8C2"
+    url = "http://192.168.121.112:31818/api/notebook/job/2JZJWKNQC"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
