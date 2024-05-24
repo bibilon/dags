@@ -58,7 +58,7 @@ with DAG(
     http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
     endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
     request_params={},  # Các tham số yêu cầu (nếu có)
-    response_check=check_response
+    response_check=check_response,
     timeout=120,  # Thời gian chờ tối đa
     poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
     dag=dag
