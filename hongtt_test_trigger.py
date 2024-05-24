@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import requests
 from requests.auth import HTTPBasicAuth
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.sensors import HttpSensor
 
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
