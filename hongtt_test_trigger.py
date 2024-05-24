@@ -5,6 +5,35 @@ import requests
 from requests.auth import HTTPBasicAuth
 from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
+from airflow.exceptions import AirflowSensorTimeout
+from airflow.utils.decorators import apply_defaults
+
+class CustomHttpSensor(HttpSensor):
+    @apply_defaults
+    def __init__(self, *args, **kwargs):
+        super(CustomHttpSensor, self).__init__(*args, **kwargs)
+
+    def poke(self, context):
+        response = self.get_response()
+        return self.check_response(response)
+
+    def check_response(self, response):
+        try:
+            print("Kết nối thành công")
+            data = response.json()
+            paragraphs = data['body']['paragraphs']
+            for paragraph in paragraphs:
+                if paragraph['isRunning']:
+                    print("Đang chạy")
+                    return True  # Tiếp tục chờ đợi nếu có đoạn nào đang chạy
+                if paragraph['status'] == 'ERROR':
+                    print("Lỗi")
+                    return False  # Nếu có lỗi, trả về fail ngay lập tức
+            print("Hoàn thành")
+            return True  # Nếu không có lỗi, trả về success
+        except Exception as e:
+            print("Không thể kết nối")
+            return False  # Nếu có lỗi khi xử lý response, trả về fail ngay lập tức
 
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
@@ -53,15 +82,14 @@ with DAG(
     python_callable=trigger_notebook,
     dag=dag
     )
-   sensor_task = HttpSensor(
+   sensor_task = CustomHttpSensor(
     task_id='zeppelin_notebook_sensor',
     method='GET',
     http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
     endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
     request_params={},  # Các tham số yêu cầu (nếu có)
-    response_check=check_response,
     timeout=120,  # Thời gian chờ tối đa
     poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
     dag=dag
-    )
+        )
    start >> trigger_notebook_task >> sensor_task
