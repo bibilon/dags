@@ -27,14 +27,14 @@ with DAG(
    tags=['example13'],
    template_searchpath='/opt/airflow/dags/repo/'
 ) as dag:
-   start = EmptyOperator(task_id="start")
+    start = EmptyOperator(task_id="start")
     with TaskGroup("my_task_group") as task_group:
        trigger_notebook_task = PythonOperator(
             task_id='trigger_notebook',
             python_callable=trigger_notebook,
             op_kwargs={'nodepadID': '2JZK2UNKQ'},
             dag=dag
-    )
+        )
        sensor_task =  CustomHttpSensor(
             task_id='zeppelin_notebook_sensor',
             method='GET',
@@ -45,5 +45,5 @@ with DAG(
             poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
             dag=dag,
         )
-         trigger_notebook_task >> sensor_task
+       trigger_notebook_task >> sensor_task
     start >> task_group
