@@ -7,7 +7,6 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
 from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
-from airflow.sensors.base_sensor_operator import BaseSensorOperator
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
     url = "http://192.168.121.112:31818/api/notebook/job/2JX2D44RY"
@@ -19,7 +18,7 @@ def trigger_notebook():
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
 #Ham check status cua notebook
-class CustomHttpSensor(BaseSensorOperator):
+class CustomHttpSensor(HttpSensor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
