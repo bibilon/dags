@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
 from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
+from airflow.utils.task_group import TaskGroup
 from unit import *
 default_args = {
     'owner': 'airflow',
@@ -27,11 +28,22 @@ with DAG(
    template_searchpath='/opt/airflow/dags/repo/'
 ) as dag:
    start = EmptyOperator(task_id="start")
-   sensor_task =  MyTaskGroup(
-    task_id='zeppelin_notebook',
-    nodepadID = "2JZK2UNKQ",
-    http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
-    endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
-    dag=dag,
+    with TaskGroup("my_task_group") as task_group:
+       trigger_notebook_task = PythonOperator(
+            task_id='trigger_notebook',
+            python_callable=trigger_notebook,
+            op_kwargs={'nodepadID': '2JZK2UNKQ'},
+            dag=dag
     )
-   start >> sensor_task 
+       sensor_task =  CustomHttpSensor(
+            task_id='zeppelin_notebook_sensor',
+            method='GET',
+            http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
+            endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
+            headers={"Content-Type": "application/json"},
+            timeout=120,  # Thời gian chờ tối đa
+            poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
+            dag=dag,
+        )
+         trigger_notebook_task >> sensor_task
+    start >> task_group
