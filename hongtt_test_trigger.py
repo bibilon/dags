@@ -47,8 +47,7 @@ class CustomHttpSensor(HttpSensor):
                 return True  # Trả về True nếu không có paragraphs nào có trạng thái là error
         except Exception as e:
             raise AirflowException(f"Error parsing response: {str(e)}")
-
-
+            
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
