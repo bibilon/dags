@@ -6,7 +6,7 @@ from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.empty import EmptyOperator
-
+from airflow.utils.task_group import TaskGroup
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
