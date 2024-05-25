@@ -29,7 +29,8 @@ with DAG(
    start = EmptyOperator(task_id="start")
    trigger_notebook_task = PythonOperator(
     task_id='trigger_notebook',
-    python_callable=trigger_notebook("2JZK2UNKQ"),
+    python_callable=trigger_notebook,
+    op_kwargs={'nodepadID': '2JZK2UNKQ'}
     dag=dag
     )
    sensor_task =  CustomHttpSensor(
