@@ -21,7 +21,7 @@ with DAG(
         'ZEPPELIN_update-tinh-phi-dags',
         default_args=default_args,
         description='simple dag',
-        schedule_interval='45 3 * * *',
+        schedule_interval='58 13 * * *',
         start_date=datetime(2024, 5, 20),
         catchup=False,
         tags=['example13'],
