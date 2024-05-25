@@ -18,35 +18,16 @@ def trigger_notebook():
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
 #Ham check status cua notebook
-class CustomHttpSensor(HttpSensor):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def poke(self, context):
-        self.log.info('Checking HTTP endpoint')
-        try:
-            response = requests.get(self.endpoint, headers=self.headers, params=self.request_params)
-            response.raise_for_status()
-            if self.response_check(response):
-                return True  # Tiếp tục sensor nếu có paragraphs đang running
-            else:
-                return False  # Dừng sensor và trả về success nếu không có paragraphs nào đang running
-        except Exception as e:
-            raise AirflowException(f"Error parsing response: {str(e)}")
-
-    def response_check(self, response):
-        try:
-            data = response.json()
-            paragraphs = data['body']['paragraphs']
-            error_paragraphs = [p for p in paragraphs if p['status'] == 'ERROR']
-            if error_paragraphs:
-                self.xcom_push(context, key='status', value='error')
-                return False  # Trả về False nếu có ít nhất một paragraphs có trạng thái là error
-            else:
-                self.xcom_push(context, key='status', value='success')
-                return True  # Trả về True nếu không có paragraphs nào có trạng thái là error
-        except Exception as e:
-            raise AirflowException(f"Error parsing response: {str(e)}")
+def check_paragraphs(response):
+    try:
+        data = response.json()
+        paragraphs = data['body']['paragraphs']
+        for paragraph in paragraphs:
+            if paragraph['status'] == 'ERROR':
+                return 'error'
+        return 'success'
+    except Exception as e:
+        return 'error'
             
 default_args = {
     'owner': 'airflow',
@@ -72,15 +53,14 @@ with DAG(
     python_callable=trigger_notebook,
     dag=dag
     )
-   sensor_task =  CustomHttpSensor(
-    task_id='zeppelin_notebook_sensor',
+   sensor_task =  HttpSensor(
+    task_id='notebook_sensor',
     method='GET',
-    http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
-    endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
-    headers={"Content-Type": "application/json"},
-    request_params={},  # Các tham số yêu cầu (nếu có)
-    timeout=120,  # Thời gian chờ tối đa
-    poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
+    http_conn_id='zeppelin_http_conn',
+    endpoint='/api/notebook/job/2JX2D44RY',
+    response_check=check_paragraphs,
+    timeout=120,
+    poke_interval=60,
     dag=dag,
-    )
+)
    start >> trigger_notebook_task >> sensor_task
