@@ -84,4 +84,5 @@ with DAG(
     poke_interval=60,
     timeout=120,
     dag=dag
+   )
    start >> trigger_notebook_task >> sensor_task
