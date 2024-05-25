@@ -25,7 +25,7 @@ def check_paragraphs(response):
         for paragraph in paragraphs:
             if paragraph['status'] == 'ERROR':
                 return 'error'
-            elif paragraph['status'] == 'RUNNING':
+            elif paragraph['status'] != 'FINISHED':
                 return False
         return 'success'
     except Exception as e:
