@@ -28,7 +28,8 @@ class CustomHttpSensor(HttpSensor):
         response = http_hook.run(self.endpoint, data=self.request_params, headers=self.headers, extra_options=self.extra_options)
         
         if response.status_code != 200:
-            raise AirflowException(f"HTTP request failed with status code {response.status_code}")
+            self.log.error(f"HTTP request failed with status code {response.status_code}")
+            return False
         
         try:
             data = response.json()
@@ -37,12 +38,25 @@ class CustomHttpSensor(HttpSensor):
             for paragraph in paragraphs:
                 status = paragraph['status']
                 if status == 'ERROR':
+                    self.log.error("One of the paragraphs has an error status")
                     raise AirflowException("One of the paragraphs has an error status")
                 elif status == 'RUNNING':
+                    self.log.info("Paragraph %s is still running", paragraph['id'])
                     all_finished = False
-            return all_finished
+            if all_finished:
+                self.log.info("All paragraphs have finished successfully")
+                return True
+            else:
+                return False  # Continue checking if any paragraph is still running
+        except KeyError as e:
+            self.log.error("KeyError parsing response: %s", str(e))
+            return False
+        except ValueError as e:
+            self.log.error("ValueError parsing response: %s", str(e))
+            return False
         except Exception as e:
-            raise AirflowException(f"Error parsing response: {str(e)}")
+            self.log.error("Unexpected error parsing response: %s", str(e))
+            return False
 
 default_args = {
     'owner': 'airflow',
