@@ -5,6 +5,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
+from airflow.sensors.base_sensor_operator import BaseSensorOperator
 from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
 # Hàm trigger notebook trong Zeppelin
@@ -30,7 +31,28 @@ def check_paragraphs(response):
         return 'success'
     except Exception as e:
         return 'error'
-            
+class ZeppelinNotebookSensor(BaseSensorOperator):
+    """
+    Sensor để kiểm tra trạng thái của tất cả các đoạn văn bản trong Zeppelin Notebook.
+    """
+
+    @apply_defaults
+    def __init__(self, zeppelin_url, notebook_id, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.zeppelin_url = zeppelin_url
+        self.notebook_id = notebook_id
+
+    def poke(self, context):
+        response = requests.get(f"{self.zeppelin_url}/api/notebook/job/{self.notebook_id}")
+        status = check_paragraphs(response)
+        task_instance = context['task_instance']
+        task_instance.xcom_push(key='zeppelin_status', value=status)
+        if status == 'error':
+            raise AirflowException("Có lỗi khi kiểm tra trạng thái các đoạn văn bản.")
+        elif status == False:
+            return False
+        else:
+            return True            
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -55,14 +77,11 @@ with DAG(
     python_callable=trigger_notebook,
     dag=dag
     )
-   sensor_task =  HttpSensor(
+   sensor_task =  ZeppelinNotebookSensor(
     task_id='notebook_sensor',
-    method='GET',
-    http_conn_id='zeppelin_http_conn',
-    endpoint='/api/notebook/job/2JX2D44RY',
-    response_check=check_paragraphs,
-    timeout=120,
+    zeppelin_url='http://zeppelin_url:port',
+    notebook_id='2JX2D44RY',
     poke_interval=60,
-    dag=dag,
-)
+    timeout=120,
+    dag=dag
    start >> trigger_notebook_task >> sensor_task
