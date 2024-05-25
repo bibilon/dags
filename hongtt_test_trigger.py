@@ -18,45 +18,36 @@ def trigger_notebook():
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
 #Ham check status cua notebook
-class CustomHttpSensor(HttpSensor):
+class CustomHttpSensor(BaseSensorOperator):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def poke(self, context):
-        self.log.info('Poking: %s', self.endpoint)
-        
-        # Initialize HttpHook within the poke method
-        http_hook = HttpHook(self.method, http_conn_id=self.http_conn_id)
-        
-        response = http_hook.run(self.endpoint, data=self.request_params, headers=self.headers, extra_options=self.extra_options)
-        
-        if response.status_code != 200:
-            self.log.error(f"HTTP request failed with status code {response.status_code}")
-            return False
-        
+        self.log.info('Checking HTTP endpoint')
+        try:
+            response = requests.get(self.endpoint, headers=self.headers, params=self.request_params)
+            response.raise_for_status()
+            if self.response_check(response):
+                return True  # Tiếp tục sensor nếu có paragraphs đang running
+            else:
+                return False  # Dừng sensor và trả về success nếu không có paragraphs nào đang running
+        except Exception as e:
+            raise AirflowException(f"Error parsing response: {str(e)}")
+
+    def response_check(self, response):
         try:
             data = response.json()
             paragraphs = data['body']['paragraphs']
-            all_finished = True
-            for paragraph in paragraphs:
-                status = paragraph['status']
-                if status == 'ERROR':
-                    self.log.error("One of the paragraphs has an error status")
-                    raise AirflowException("One of the paragraphs has an error status")
-                elif status == 'RUNNING':
-                    self.log.info("Paragraph %s is still running", paragraph['id'])
-                    all_finished = False
-            if all_finished:
-                self.log.info("All paragraphs have finished successfully")
-                return True
+            error_paragraphs = [p for p in paragraphs if p['status'] == 'ERROR']
+            if error_paragraphs:
+                self.xcom_push(context, key='status', value='error')
+                return False  # Trả về False nếu có ít nhất một paragraphs có trạng thái là error
             else:
-                return False  # Continue checking if any paragraph is still running
-        except KeyError as e:
-            self.log.error("KeyError parsing response: %s", str(e))
-            return False
-        except ValueError as e:
-            self.log.error("ValueError parsing response: %s", str(e))
-            return False
+                self.xcom_push(context, key='status', value='success')
+                return True  # Trả về True nếu không có paragraphs nào có trạng thái là error
         except Exception as e:
-            self.log.error("Unexpected error parsing response: %s", str(e))
-            return False
+            raise AirflowException(f"Error parsing response: {str(e)}")
+
 
 default_args = {
     'owner': 'airflow',
