@@ -39,7 +39,7 @@ with DAG(
             task_id='check_status_notebook',
             method='GET',
             http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
-            endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
+            endpoint='/api/notebook/job/2JZK2UNKQ',  # Thay {note_id} bằng ID của notebook Zeppelin
             headers={"Content-Type": "application/json"},
             timeout=120,  # Thời gian chờ tối đa
             poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
