@@ -30,7 +30,7 @@ with DAG(
    trigger_notebook_task = PythonOperator(
     task_id='trigger_notebook',
     python_callable=trigger_notebook,
-    op_kwargs={'nodepadID': '2JZK2UNKQ'}
+    op_kwargs={'nodepadID': '2JZK2UNKQ'},
     dag=dag
     )
    sensor_task =  CustomHttpSensor(
