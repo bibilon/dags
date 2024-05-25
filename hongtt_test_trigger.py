@@ -17,17 +17,25 @@ def trigger_notebook():
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
 #Ham check status cua notebook
-def check_response(response):
-    try:
-        data = response.json()
-        paragraphs = data['body']['paragraphs']
-        for paragraph in paragraphs:
-            if paragraph['status'] == 'ERROR' or paragraph['status'] == 'RUNNING':
-                return False  # Nếu có ít nhất một đoạn lỗi, trả về True
-        return True  # Nếu không có đoạn nào lỗi, trả về False
-    except Exception as e:
-        print("khong ket noi duoc")
-        return False  # Nếu có lỗi khi xử lý response, trả về True
+class CustomHttpSensor(HttpSensor):
+    def poke(self, context):
+        response = self.hook.run(self.endpoint, data=self.request_params, headers=self.headers, extra_options=self.extra_options)
+        if response.status_code != 200:
+            raise AirflowException(f"HTTP request failed with status code {response.status_code}")
+        
+        try:
+            data = response.json()
+            paragraphs = data['body']['paragraphs']
+            all_finished = True
+            for paragraph in paragraphs:
+                status = paragraph['status']
+                if status == 'ERROR':
+                    raise AirflowException("One of the paragraphs has an error status")
+                elif status == 'RUNNING':
+                    all_finished = False
+            return all_finished
+        except Exception as e:
+            raise AirflowException(f"Error parsing response: {str(e)}")
 
 default_args = {
     'owner': 'airflow',
@@ -53,15 +61,15 @@ with DAG(
     python_callable=trigger_notebook,
     dag=dag
     )
-   sensor_task = HttpSensor(
+   sensor_task =  CustomHttpSensor(
     task_id='zeppelin_notebook_sensor',
     method='GET',
     http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
     endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
+    headers={"Content-Type": "application/json"},
     request_params={},  # Các tham số yêu cầu (nếu có)
-    response_check=check_response,
     timeout=120,  # Thời gian chờ tối đa
     poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
-    dag=dag
+    dag=dag,
     )
    start >> trigger_notebook_task >> sensor_task
