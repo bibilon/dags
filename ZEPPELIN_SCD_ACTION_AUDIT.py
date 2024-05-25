@@ -46,4 +46,5 @@ with DAG(
             dag=dag,
         )
        trigger_notebook_task >> sensor_task
-    start >> task_group
+    end = EmptyOperator(task_id="FINSHED")
+    start >> task_group >> end
