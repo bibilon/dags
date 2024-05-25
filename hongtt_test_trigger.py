@@ -19,7 +19,13 @@ def trigger_notebook():
 #Ham check status cua notebook
 class CustomHttpSensor(HttpSensor):
     def poke(self, context):
-        response = self.hook.run(self.endpoint, data=self.request_params, headers=self.headers, extra_options=self.extra_options)
+        self.log.info('Poking: %s', self.endpoint)
+        
+        # Initialize HttpHook within the poke method
+        http_hook = HttpHook(self.method, http_conn_id=self.http_conn_id)
+        
+        response = http_hook.run(self.endpoint, data=self.request_params, headers=self.headers, extra_options=self.extra_options)
+        
         if response.status_code != 200:
             raise AirflowException(f"HTTP request failed with status code {response.status_code}")
         
