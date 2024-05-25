@@ -6,6 +6,7 @@ from requests.auth import HTTPBasicAuth
 from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
 from airflow.hooks.http_hook import HttpHook
+from airflow.exceptions import AirflowException
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook():
     url = "http://192.168.121.112:31818/api/notebook/job/2JX2D44RY"
