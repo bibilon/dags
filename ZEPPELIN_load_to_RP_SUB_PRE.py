@@ -21,7 +21,7 @@ with DAG(
    'ZEPPELIN_load_to_RP_SUB_PRE',
    default_args=default_args,
    description='simple dag',
-   schedule_interval='07 14 * * *',
+   schedule_interval='10 15 * * *',
    start_date=datetime(2024, 5, 16),
    catchup=False,
    tags=['example13'],
@@ -46,4 +46,5 @@ with DAG(
             dag=dag,
         )
        trigger_notebook_task >> sensor_task
-    start >> task_group
+    end = EmptyOperator(task_id="FINSHED")
+    start >> task_group >> end
