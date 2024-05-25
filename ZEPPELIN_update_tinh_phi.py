@@ -73,5 +73,5 @@ with DAG(
             dag=dag,
         )
        trigger_notebook_task >> sensor_task
-    start >> wait_for_load_RP_SUB_PRE_dags >> load_COMM_RP >> update_phi
+    start >> wait_for_load_RP_SUB_PRE_dags >> load_COMM_RP >> update_phi >> end
 
