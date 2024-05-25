@@ -18,7 +18,7 @@ default_args = {
     'retries': 0
 }
 with DAG(
-   'trigger_zeppelin_notebook',
+   'ZEPPELIN_load_to_RP_SUB_PRE',
    default_args=default_args,
    description='simple dag',
    schedule_interval=timedelta(days=1),
@@ -36,7 +36,7 @@ with DAG(
             dag=dag
         )
        sensor_task =  CustomHttpSensor(
-            task_id='zeppelin_notebook_sensor',
+            task_id='load_to_RP_SUB_PRE',
             method='GET',
             http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
             endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
