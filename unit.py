@@ -46,7 +46,6 @@ class CustomHttpSensor(HttpSensor):
             raise AirflowException(f"Error parsing response: {str(e)}")
 
 class MyTaskGroup(BaseOperator):
-    @apply_defaults
     def __init__(self, nodepadID, endpoint, http_conn_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.nodepadID = nodepadID
