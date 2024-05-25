@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
 from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
+from airflow.models.baseoperator import BaseOperator
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook(nodepadID : str):
     url = f"http://192.168.121.112:31818/api/notebook/job/{nodepadID}"
@@ -43,3 +44,42 @@ class CustomHttpSensor(HttpSensor):
             return all_finished
         except Exception as e:
             raise AirflowException(f"Error parsing response: {str(e)}")
+
+class MyTaskGroup(BaseOperator):
+    @apply_defaults
+    def __init__(self, nodepadID, endpoint, http_conn_id, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.nodepadID = nodepadID
+        self.endpoint = endpoint
+        self.http_conn_id = http_conn_id
+        self.trigger_notebook_task = None
+        self.sensor_task = None
+
+    def execute(self, context):
+        # Định nghĩa các task
+        self.trigger_notebook_task = PythonOperator(
+            task_id='trigger_notebook',
+            python_callable=trigger_notebook,
+	    op_kwargs={'nodepadID': self.nodepadID},
+            dag=context['dag'],  # Sử dụng context['dag'] để truy cập đến DAG
+        )
+        self.sensor_task = CustomHttpSensor(
+            task_id='zeppelin_notebook_sensor',
+            method='GET',
+            http_conn_id=self.http_conn_id,
+            endpoint=self.endpoint,
+            headers={"Content-Type": "application/json"},
+            timeout=120,
+            poke_interval=60,
+            dag=context['dag'],  # Sử dụng context['dag'] để truy cập đến DAG
+        )
+
+        # Thiết lập luồng công việc
+        self.trigger_notebook_task >> self.sensor_task
+
+        # Thực thi các task
+        self.trigger_notebook_task.execute(context)
+        self.sensor_task.execute(context)
+
+        # Trả về kết quả của lớp Python
+        return True
