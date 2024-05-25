@@ -29,7 +29,7 @@ with DAG(
    start = EmptyOperator(task_id="start")
    trigger_notebook_task = PythonOperator(
     task_id='trigger_notebook',
-    python_callable=trigger_notebook,
+    python_callable=trigger_notebook("2JZK2UNKQ"),
     dag=dag
     )
    sensor_task =  CustomHttpSensor(
