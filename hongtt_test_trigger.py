@@ -28,7 +28,7 @@ with DAG(
    template_searchpath='/opt/airflow/dags/repo/'
 ) as dag:
     start = EmptyOperator(task_id="start")
-    with TaskGroup("my_task_group") as task_group:
+    with TaskGroup("load_to_RP_SUB_PRE") as task_group:
        trigger_notebook_task = PythonOperator(
             task_id='trigger_notebook',
             python_callable=trigger_notebook,
@@ -36,7 +36,7 @@ with DAG(
             dag=dag
         )
        sensor_task =  CustomHttpSensor(
-            task_id='load_to_RP_SUB_PRE',
+            task_id='check_status_notebook',
             method='GET',
             http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
             endpoint='/api/notebook/job/2JX2D44RY',  # Thay {note_id} bằng ID của notebook Zeppelin
