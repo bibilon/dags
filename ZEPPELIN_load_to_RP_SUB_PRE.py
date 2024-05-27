@@ -21,7 +21,7 @@ with DAG(
    'ZEPPELIN_load_to_RP_SUB_PRE',
    default_args=default_args,
    description='simple dag',
-   schedule_interval='18 15 * * *',
+   schedule_interval='50 1 * * *',
    start_date=datetime(2024, 5, 16),
    catchup=False,
    tags=['example13'],
