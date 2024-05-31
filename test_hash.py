@@ -89,9 +89,9 @@ s3_config = [
     'http://192.168.121.112:32490'
 ]
 def check_integrity_file ( s3_config , sftp_config):
-    sftp_config = hash_file_on_sftp(sftp_config)
-    s3_config = hash_file_from_s3(s3_config)
-    if s3_config == sftp_config:
+    sftp_config1 = hash_file_on_sftp(sftp_config)
+    s3_config1 = hash_file_from_s3(s3_config)
+    if s3_config1 == sftp_config1:
         print("lay file ve du")
         return true
     print("lay file ve khong du")
