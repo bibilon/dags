@@ -15,8 +15,9 @@ from unit import *
 import boto3
 import hashlib
 
-def hash_file_from_s3(bucket_name, s3_file_key, aws_access_key_id, aws_secret_access_key, endpoint_url, hash_algorithm='sha256', block_size=65536):
+def hash_file_from_s3(config_s3, hash_algorithm='sha256', block_size=65536):
     # Kết nối tới S3
+    bucket_name, s3_file_key, aws_access_key_id, aws_secret_access_key, endpoint_url = config_s3
     s3 = boto3.client('s3', 
                       aws_access_key_id=aws_access_key_id,
                       aws_secret_access_key=aws_secret_access_key,
@@ -42,8 +43,9 @@ def hash_file_from_s3(bucket_name, s3_file_key, aws_access_key_id, aws_secret_ac
     # Trả về giá trị băm dưới dạng chuỗi hex
     return hasher.hexdigest()
     
-def hash_file_on_sftp(hostname, port, username, password, remote_file_path, hash_algorithm='sha256', block_size=65536):
+def hash_file_on_sftp(config_sftp, hash_algorithm='sha256', block_size=65536):
     # Kết nối tới SFTP server
+    hostname, port, username, password, remote_file_path = config_sftp
     transport = paramiko.Transport((hostname, port))
     transport.connect(username=username, password=password)
     sftp = paramiko.SFTPClient.from_transport(transport)
@@ -71,8 +73,21 @@ def hash_file_on_sftp(hostname, port, username, password, remote_file_path, hash
 
     # Trả về giá trị băm dưới dạng chuỗi hex
     return hasher.hexdigest()
-
-
+sftp_config = [
+    '14.231.238.41',    # IP
+    2223,                   # Port
+    'nguyen',      # User
+    'vwefWEHKIer#^&843VDsds',      # Password
+    '/home/nguyen/thinhdv/data/SHOP.csv'  # Remote file path   
+]
+    
+s3_config = [
+    'pbh-test',    
+    'SHOP.csv'  ,            
+    'GYHBUZJNWPBU84OFNB0W',
+    'K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV',
+    'http://192.168.121.112:32490'
+]
 
 default_args = {
     'owner': 'airflow',
@@ -97,13 +112,13 @@ with DAG(
        hash_ftp = PythonOperator(
             task_id='hash_ftp',
             python_callable=hash_file_on_sftp,
-            op_kwargs={'hostname': '14.231.238.41' , 'port': 2223, 'username': 'nguyen' , 'password': 'vwefWEHKIer#^&843VDsds' , 'remote_file_path': '/home/nguyen/thinhdv/data/SHOP.csv' },
+            op_kwargs={'config_sftp': sftp_config },
             dag=dag
         )
        hash_s3 = PythonOperator(
             task_id='hash_s3',
             python_callable=hash_file_from_s3,
-            op_kwargs={'bucket_name': 'pbh-test', 's3_file_key': 'SHOP.csv', 'aws_access_key_id': 'GYHBUZJNWPBU84OFNB0W', 'aws_secret_access_key': 'K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV', 'endpoint_url': 'http://192.168.121.112:32490' },
+            op_kwargs={'config_s3': s3_config },
             dag=dag
         )
        hash_ftp >> hash_s3
