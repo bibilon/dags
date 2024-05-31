@@ -94,14 +94,14 @@ with DAG(
 ) as dag:
     start = EmptyOperator(task_id="start")
     with TaskGroup("test_hash") as task_group:
-       trigger_notebook_task = PythonOperator(
-            task_id='trigger_notebook',
+       hash_ftp = PythonOperator(
+            task_id='hash_ftp',
             python_callable=hash_file_on_sftp,
             op_kwargs={'hostname': '14.231.238.41' , 'port': 2223, 'username': 'nguyen' , 'password': 'vwefWEHKIer#^&843VDsds' , 'remote_file_path': '/home/nguyen/thinhdv/data/SHOP.csv' },
             dag=dag
         )
        hash_s3 = PythonOperator(
-            task_id='trigger_notebook',
+            task_id='hash_s3',
             python_callable=hash_file_from_s3,
             op_kwargs={'bucket_name': 'pbh-test', 's3_file_key': 'SHOP.csv', 'aws_access_key_id': 'GYHBUZJNWPBU84OFNB0W', 'aws_secret_access_key': 'K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV', 'endpoint_url': 'http://192.168.121.112:32490' },
             dag=dag
