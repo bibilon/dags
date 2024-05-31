@@ -88,7 +88,14 @@ s3_config = [
     'K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV',
     'http://192.168.121.112:32490'
 ]
-
+def check_integrity_file ( s3_config , sftp_config):
+    sftp_config = hash_file_on_sftp(sftp_config)
+    s3_config = hash_file_from_s3(s3_config)
+    if s3_config == sftp_config:
+        print("lay file ve du")
+        return true
+    print("lay file ve khong du")
+    return false
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -121,6 +128,12 @@ with DAG(
             op_kwargs={'config_s3': s3_config },
             dag=dag
         )
-       hash_ftp >> hash_s3
+       check = PythonOperator(
+            task_id='check',
+            python_callable=check_integrity_file,
+            op_kwargs={'config_s3': s3_config , 'sftp_config': sftp_config },
+            dag=dag
+        )        
+       hash_ftp >> hash_s3 >> check
     start >> task_group
     
