@@ -37,7 +37,7 @@ def hash_file_on_sftp(hostname, port, username, password, remote_file_path, hash
     # Đóng kết nối SFTP
     sftp.close()
     transport.close()
-	print(f"SHA-256 hash of the file on SFTP: {hasher.hexdigest()}")
+    print(f"SHA-256 hash of the file on SFTP: {hasher.hexdigest()}")
 
     # Trả về giá trị băm dưới dạng chuỗi hex
     return hasher.hexdigest()
