@@ -12,6 +12,36 @@ from airflow.exceptions import AirflowException
 from airflow.utils.task_group import TaskGroup
 from unit import *
 
+import boto3
+import hashlib
+
+def hash_file_from_s3(bucket_name, s3_file_key, aws_access_key_id, aws_secret_access_key, endpoint_url, hash_algorithm='sha256', block_size=65536):
+    # Kết nối tới S3
+    s3 = boto3.client('s3', 
+                      aws_access_key_id=aws_access_key_id,
+                      aws_secret_access_key=aws_secret_access_key,
+                      endpoint_url=endpoint_url)
+
+    # Chọn thuật toán băm
+    if hash_algorithm.lower() == 'sha256':
+        hasher = hashlib.sha256()
+    elif hash_algorithm.lower() == 'md5':
+        hasher = hashlib.md5()
+    else:
+        raise ValueError("Unsupported hash algorithm: {}".format(hash_algorithm))
+
+    # Tải tệp tin từ S3 và tính băm
+    obj = s3.get_object(Bucket=bucket_name, Key=s3_file_key)
+    with obj['Body'] as data:
+        while True:
+            block = data.read(block_size)
+            if not block:
+                break
+            hasher.update(block)
+    print(f"SHA-256 hash of the file on SFTP: {hasher.hexdigest()}")
+    # Trả về giá trị băm dưới dạng chuỗi hex
+    return hasher.hexdigest()
+    
 def hash_file_on_sftp(hostname, port, username, password, remote_file_path, hash_algorithm='sha256', block_size=65536):
     # Kết nối tới SFTP server
     transport = paramiko.Transport((hostname, port))
@@ -70,5 +100,11 @@ with DAG(
             op_kwargs={'hostname': '14.231.238.41' , 'port': 2223, 'username': 'nguyen' , 'password': 'vwefWEHKIer#^&843VDsds' , 'remote_file_path': '/home/nguyen/thinhdv/data/SHOP.csv' },
             dag=dag
         )
+       hash_s3 = PythonOperator(
+            task_id='trigger_notebook',
+            python_callable=hash_file_from_s3,
+            op_kwargs={'bucket_name': 'pbh-test', 's3_file_key': 'SHOP.csv', 'aws_access_key_id': 'GYHBUZJNWPBU84OFNB0W', 'aws_secret_access_key': 'K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV', 'endpoint_url': 'http://192.168.121.112:32490' },
+            dag=dag
+        )
 
-
+    
