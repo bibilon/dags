@@ -67,7 +67,7 @@ with DAG(
        trigger_notebook_task = PythonOperator(
             task_id='trigger_notebook',
             python_callable=hash_file_on_sftp,
-            op_kwargs={'hostname': '14.231.238.41' , 'port': 2223, 'username': 'nguyen' , 'password': 'vwefWEHKIer#^&843VDsds' , 'remote_file_path': '/home/nguyen/thinhdv/data/SHOP.csv.' },
+            op_kwargs={'hostname': '14.231.238.41' , 'port': 2223, 'username': 'nguyen' , 'password': 'vwefWEHKIer#^&843VDsds' , 'remote_file_path': '/home/nguyen/thinhdv/data/SHOP.csv' },
             dag=dag
         )
 
