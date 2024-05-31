@@ -106,6 +106,6 @@ with DAG(
             op_kwargs={'bucket_name': 'pbh-test', 's3_file_key': 'SHOP.csv', 'aws_access_key_id': 'GYHBUZJNWPBU84OFNB0W', 'aws_secret_access_key': 'K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV', 'endpoint_url': 'http://192.168.121.112:32490' },
             dag=dag
         )
-        hash_ftp >> hash_s3
+       hash_ftp >> hash_s3
     start >> test_hash
     
