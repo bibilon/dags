@@ -107,5 +107,5 @@ with DAG(
             dag=dag
         )
        hash_ftp >> hash_s3
-    start >> test_hash
+    start >> task_group
     
