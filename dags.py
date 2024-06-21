@@ -7,6 +7,7 @@ from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.models import Variable
+from airflow.operators.python_operator import PythonOperator
 
 default_args = {
     'owner': 'airflow',
