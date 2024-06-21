@@ -6,6 +6,7 @@ from airflow.models import Variable
 from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.models import Variable
 
 default_args = {
     'owner': 'airflow',
@@ -15,6 +16,11 @@ default_args = {
     'email_on_retry': False,
     'retries': 1
 }
+
+def print_param(**kwargs):
+    param = kwargs['dag_run'].conf.get('param_key')
+    print(f'The parameter value is: {param}')
+
 with DAG(
    'my-iiii-dag',
    default_args=default_args,
@@ -26,16 +32,11 @@ with DAG(
    template_searchpath='/opt/airflow/dags/repo/'
 ) as dag:
    start = EmptyOperator(task_id="start")
-   t1 = SparkKubernetesOperator(
-       task_id='n-spark',
-       trigger_rule="all_success",
-       depends_on_past=False,
-       retries=0,
-       namespace='spark-jobs',
-       application_file="read-paquet.yaml",
-       kubernetes_conn_id="myk8s",
-       do_xcom_push=True,
-       dag=dag
+   task = PythonOperator(
+     task_id='print_param_task',
+     python_callable=print_param,
+     provide_context=True,
+     dag=dag,
    )
-   start >> t1
+   start >> task
     
