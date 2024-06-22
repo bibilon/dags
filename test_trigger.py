@@ -17,6 +17,11 @@ default_args = {
     'email_on_retry': False,
     'retries': 0
 }
+
+def print_param(**kwargs):
+    noteID = kwargs['dag_run'].conf.get('noteID')
+    print(f'The parameter value is: {noteID}')
+    
 with DAG(
    'test_trigger',
    default_args=default_args,
@@ -28,7 +33,7 @@ with DAG(
    template_searchpath='/opt/airflow/dags/repo/'
 ) as dag:
     start = EmptyOperator(task_id="start")
-    with TaskGroup("SCD_ACTION_AUDIT") as task_group:
+    with TaskGroup("test") as task_group:
        trigger_notebook_task = PythonOperator(
             task_id='trigger_notebook',
             python_callable=trigger_notebook,
@@ -39,7 +44,7 @@ with DAG(
             task_id='check_status_notebook',
             method='GET',
             http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
-            endpoint='/api/notebook/job/2JXB29MDS',  # Thay {note_id} bằng ID của notebook Zeppelin
+            endpoint=s'/api/notebook/job/{noteID}',  # Thay {note_id} bằng ID của notebook Zeppelin
             headers={"Content-Type": "application/json"},
             timeout=120,  # Thời gian chờ tối đa
             poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
