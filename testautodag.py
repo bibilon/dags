@@ -2,7 +2,7 @@ from airflow import DAG
 from datetime import datetime
 
 for i in range(1, 4):
-    dag_name = f"dynamic_dag_{i}"
+    dag_name = f"abc_{i}"
     
     default_args = {
         'owner': 'airflow',
