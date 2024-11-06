@@ -6,7 +6,7 @@ import cx_Oracle
 # Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG
 def get_dynamic_dag_names():
     # Thay thế các thông tin kết nối theo cấu hình của bạn
-    dsn_tns = cx_Oracle.makedsn('192.168.121.112', '1521', sid='ORCLCDB')
+    dsn_tns = cx_Oracle.makedsn('192.168.1.100', '1521', sid='ORCLCDB')
 
     # Kết nối đến cơ sở dữ liệu sử dụng SID
     connection = cx_Oracle.connect(user='pbh_app', password='admin@123', dsn=dsn_tns)
