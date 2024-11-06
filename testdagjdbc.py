@@ -1,30 +1,36 @@
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
+from airflow.models import Variable
 from datetime import datetime
 import cx_Oracle
 
-# Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG cùng với lịch biểu
-def get_dynamic_dag_configs():
-    # Thay thế các thông tin kết nối theo cấu hình của bạn
-    dsn_tns = cx_Oracle.makedsn('192.168.1.100', '1521', sid='ORCLCDB')
+# Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG
+def get_dynamic_dag_names():
+    # Lấy các thông tin kết nối từ Airflow Variables
+    host = Variable.get("server")
+    port = Variable.get("port")
+    sid = Variable.get("SID")
+    user = Variable.get("user")
+    password = Variable.get("pass")
+
+    # Tạo DSN sử dụng các biến
+    dsn_tns = cx_Oracle.makedsn(host, port, sid=sid)
 
     # Kết nối đến cơ sở dữ liệu sử dụng SID
-    connection = cx_Oracle.connect(user='pbh_app', password='admin@123', dsn=dsn_tns)
+    connection = cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
     
     try:
         cursor = connection.cursor()
-        # Thực hiện truy vấn để lấy tên DAG và lịch biểu
-        cursor.execute("SELECT dag_name, schedule_interval FROM DAG_NAMES")  # Cập nhật truy vấn nếu cần
+        cursor.execute("SELECT dag_name, schedule_interval FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn nếu cần
         dag_configs = cursor.fetchall()
     finally:
         cursor.close()
         connection.close()
     
-    # Trả về danh sách cấu hình DAG với tên và lịch biểu
-    return [(config[0], config[1]) for config in dag_configs]
+    return [(config[0], config[1]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
 
 # Lấy cấu hình DAG từ cơ sở dữ liệu
-dag_configs = get_dynamic_dag_configs()
+dag_configs = get_dynamic_dag_names()
 
 # Tạo DAG cho mỗi cấu hình lấy được
 for dag_name, schedule_interval in dag_configs:
