@@ -1,10 +1,10 @@
 from airflow import DAG
-from airflow.operators.dummy import DummyOperator  # Cập nhật import từ airflow
+from airflow.operators.dummy import DummyOperator
 from datetime import datetime
 import cx_Oracle
 
-# Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG
-def get_dynamic_dag_names():
+# Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG cùng với lịch biểu
+def get_dynamic_dag_configs():
     # Thay thế các thông tin kết nối theo cấu hình của bạn
     dsn_tns = cx_Oracle.makedsn('192.168.1.100', '1521', sid='ORCLCDB')
 
@@ -13,28 +13,37 @@ def get_dynamic_dag_names():
     
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT dag_name FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn theo yêu cầu của bạn
-        dag_names = cursor.fetchall()
+        # Thực hiện truy vấn để lấy tên DAG và lịch biểu
+        cursor.execute("SELECT dag_name, schedule_interval FROM DAG_NAMES")  # Cập nhật truy vấn nếu cần
+        dag_configs = cursor.fetchall()
     finally:
         cursor.close()
         connection.close()
     
-    return [name[0] for name in dag_names]  # Trả về danh sách tên DAG
+    # Trả về danh sách cấu hình DAG với tên và lịch biểu
+    return [(config[0], config[1]) for config in dag_configs]
 
-# Lấy tên DAG từ cơ sở dữ liệu
-dag_names = get_dynamic_dag_names()
+# Lấy cấu hình DAG từ cơ sở dữ liệu
+dag_configs = get_dynamic_dag_configs()
 
-# Tạo DAG cho mỗi tên lấy được
-for dag_name in dag_names:
+# Tạo DAG cho mỗi cấu hình lấy được
+for dag_name, schedule_interval in dag_configs:
     default_args = {
         'owner': 'airflow',
-        'start_date': datetime(2024, 11, 1),
+        'start_date': datetime(2023, 1, 1),  # Đặt start_date theo yêu cầu của bạn
     }
 
-    # Đảm bảo rằng mỗi DAG được định nghĩa trong một khối riêng biệt
-    with DAG(dag_id=dag_name, default_args=default_args, schedule_interval='@daily', catchup=False) as dag:
-        task = DummyOperator(task_id='dummy_task')
+    # Khởi tạo DAG với lịch biểu từ cơ sở dữ liệu
+    dag = DAG(
+        dag_id=dag_name,
+        default_args=default_args,
+        schedule_interval=schedule_interval,
+        catchup=False
+    )
 
-    # Cần phải thêm DAG vào globals() để Airflow có thể nhận diện
+    # Thêm một DummyOperator làm nhiệm vụ mẫu
+    with dag:
+        start = DummyOperator(task_id='start')
+
+    # Đăng ký DAG vào globals để Airflow có thể nhận diện
     globals()[dag_name] = dag
-
