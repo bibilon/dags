@@ -20,6 +20,20 @@ def trigger_notebook(nodepadID : str):
     else:
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
         response.raise_for_status()
+# Restart interpreter notebook
+def restart_interpreter_notebook(notebookID: str):
+    host_zeppelin = Variable.get("host_zeppelin")
+    port_zeppelin = Variable.get("port_zeppelin")
+    restart_url = f"http://{host_zeppelin}:{port_zeppelin}/api/interpreter/setting/restart/spark"
+    headers = {"Content-Type": "application/json"}
+    restart_response = requests.put(restart_url, headers=headers, json={"noteId": f"{notebookID}"})
+    
+    if restart_response.status_code == 200:
+        print("Interpreter restarted successfully.")
+    else:
+        print(f"Failed to restart interpreter: {restart_response.status_code}, {restart_response.text}")
+        restart_response.raise_for_status()
+        
 #Ham check status cua notebook
 class CustomHttpSensor(HttpSensor):
     def poke(self, context):
