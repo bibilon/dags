@@ -6,16 +6,15 @@ from requests.auth import HTTPBasicAuth
 from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
 from airflow.hooks.http_hook import HttpHook
+from airflow.hooks.base_hook import BaseHook
 from airflow.exceptions import AirflowException
 from airflow.models import Variable
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook(nodepadID : str):
     #host_zeppelin = Variable.get("host_zeppelin")
     #port_zeppelin = Variable.get("port_zeppelin")
-    http_hook = HttpHook(http_conn_id="zeppelin_http_conn", method="POST")
-    
-    # Lấy URL cơ bản từ connection
-    base_url = http_hook.base_url    
+    connection = BaseHook.get_connection('zeppelin_http_conn')
+    base_url = connection.get_uri() 
     url = f"{base_url}/api/notebook/job/{nodepadID}"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
