@@ -38,6 +38,21 @@ def get_dynamic_dag_names():
     
     return [(config[0], config[1], config[2]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
 
+# Hàm để clone notebook và trả về ID mới
+def clone_notebook(original_notebook_id: str):
+    connection = BaseHook.get_connection('zeppelin_http_conn')
+    base_url = connection.get_uri() 
+    clone_url = f"{base_url}/api/notebook/{original_notebook_id}"
+    headers = {"Content-Type": "application/json"}
+    data = {"name": f"Cloned-{original_notebook_id}"}
+
+    response = requests.post(clone_url, headers=headers, json=data)
+    if response.status_code == 200:
+        notebook_id = response.json().get("body")
+        return notebook_id  # Trả về ID của notebook đã clone
+    else:
+        raise Exception("Failed to clone notebook")
+
 # Lấy cấu hình DAG từ cơ sở dữ liệu
 dag_configs = get_dynamic_dag_names()
 
@@ -62,10 +77,18 @@ with main_dag:
 
     for dag_name, schedule_interval, notebookid in dag_configs:
         with TaskGroup(group_id=dag_name) as task_group:
+            clone_task = PythonOperator(
+                task_id='clone_notebook',
+                python_callable=clone_notebook,
+                op_kwargs={'original_notebook_id': notebookid},
+                dag=main_dag
+            )
+
+            # Task trigger notebook với ID notebook đã clone
             trigger_notebook_task = PythonOperator(
                 task_id='trigger_notebook',
                 python_callable=trigger_notebook,
-                op_kwargs={'nodepadID': notebookid},
+                op_kwargs={'nodepadID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
                 dag=main_dag
             )
 
@@ -73,7 +96,7 @@ with main_dag:
                 task_id='check_status_notebook',
                 method='GET',
                 http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
-                endpoint=f'/api/notebook/job/{notebookid}',  # Thay {note_id} bằng ID của notebook Zeppelin
+                endpoint=f'/api/notebook/job/{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}',  # Thay {note_id} bằng ID của notebook Zeppelin
                 headers={"Content-Type": "application/json"},
                 timeout=120,  # Thời gian chờ tối đa
                 poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
@@ -83,12 +106,12 @@ with main_dag:
             restart_interpreter = PythonOperator(
                 task_id='restart_interpreter_notebook',
                 python_callable=restart_interpreter_notebook,
-                op_kwargs={'notebookID': notebookid},
+                op_kwargs={'notebookID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
                 dag=main_dag
             )
 
             # Xác định thứ tự thực hiện trong TaskGroup
-            trigger_notebook_task >> sensor_task >> restart_interpreter
+            clone_task >> trigger_notebook_task >> sensor_task >> restart_interpreter
 
         # Xác định thứ tự giữa các TaskGroup
         previous_task_group >> task_group
