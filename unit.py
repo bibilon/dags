@@ -17,7 +17,11 @@ def trigger_notebook(nodepadID : str, item_id: str):
     base_url = connection.get_uri() 
     url = f"{base_url}/api/notebook/job/{nodepadID}"
     headers = { "Content-Type": "application/json"}
-    data = {"item_id": item_id}  # Pass item_id in the request body
+    data = {
+        "params": {
+            "item_id": item_id  # Pass item_id in the params field
+        }
+    }
     response = requests.post(url, headers=headers,  json=data)
     if response.status_code == 200:
         print("Notebook triggered successfully.")
