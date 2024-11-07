@@ -77,7 +77,7 @@ for dag_name, schedule_interval, notebookid in dag_configs:
         restart_interpreter_notebook = PythonOperator(
             task_id='restart_interpreter_notebook',
             python_callable=restart_interpreter_notebook,
-            op_kwargs={'nodepadID': f'{notebookid}'},
+            op_kwargs={'notebookID': f'{notebookid}'},
             dag=dag
         )
         trigger_notebook_task >> sensor_task >> restart_interpreter_notebook
