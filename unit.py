@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.http_sensor import HttpSensor
 from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
+from airflow.models import Variable
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook(nodepadID : str):
     host_zeppelin = Variable.get("host_zeppelin")
