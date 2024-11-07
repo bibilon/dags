@@ -16,7 +16,7 @@ def trigger_notebook(nodepadID : str):
     
     # Lấy URL cơ bản từ connection
     base_url = http_hook.base_url    
-    url = f"http://{base_url}/api/notebook/job/{nodepadID}"
+    url = f"{base_url}/api/notebook/job/{nodepadID}"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
