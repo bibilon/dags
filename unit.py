@@ -24,9 +24,9 @@ def trigger_notebook(nodepadID : str):
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
 # Restart interpreter notebook
 def restart_interpreter_notebook(notebookID: str):
-    host_zeppelin = Variable.get("host_zeppelin")
-    port_zeppelin = Variable.get("port_zeppelin")
-    restart_url = f"http://{host_zeppelin}:{port_zeppelin}/api/interpreter/setting/restart/spark"
+    connection = BaseHook.get_connection('zeppelin_http_conn')
+    base_url = connection.get_uri() 
+    restart_url = f"{base_url}:{port_zeppelin}/api/interpreter/setting/restart/spark"
     headers = {"Content-Type": "application/json"}
     restart_response = requests.put(restart_url, headers=headers, json={"noteId": f"{notebookID}"})
     
