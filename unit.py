@@ -11,7 +11,7 @@ from airflow.exceptions import AirflowException
 def trigger_notebook(nodepadID : str):
     host_zeppelin = Variable.get("host_zeppelin")
     port_zeppelin = Variable.get("port_zeppelin")
-    url = f"http://host_zeppelin:port_zeppelin/api/notebook/job/{nodepadID}"
+    url = f"http://{host_zeppelin}:{port_zeppelin}/api/notebook/job/{nodepadID}"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
