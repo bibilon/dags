@@ -77,7 +77,7 @@ with main_dag:
                 headers={"Content-Type": "application/json"},
                 timeout=120,  # Thời gian chờ tối đa
                 poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
-                dag=dag,
+                dag=main_dag
             )
 
             restart_interpreter = PythonOperator(
