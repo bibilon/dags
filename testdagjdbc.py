@@ -74,7 +74,13 @@ for dag_name, schedule_interval, notebookid in dag_configs:
             poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
             dag=dag,
         )
-        trigger_notebook_task >> sensor_task
+        restart_interputer = PythonOperator(
+            task_id='restart_notebook',
+            python_callable=restart_notebook,
+            op_kwargs={'nodepadID': f'{notebookid}'},
+            dag=dag
+        )
+        trigger_notebook_task >> sensor_task >> restart_interputer
 
     # Đăng ký DAG vào globals để Airflow có thể nhận diện
     globals()[dag_name] = dag
