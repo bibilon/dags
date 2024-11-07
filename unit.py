@@ -26,7 +26,7 @@ def trigger_notebook(nodepadID : str):
 def restart_interpreter_notebook(notebookID: str):
     connection = BaseHook.get_connection('zeppelin_http_conn')
     base_url = connection.get_uri() 
-    restart_url = f"{base_url}:{port_zeppelin}/api/interpreter/setting/restart/spark"
+    restart_url = f"{base_url}/api/interpreter/setting/restart/spark"
     headers = {"Content-Type": "application/json"}
     restart_response = requests.put(restart_url, headers=headers, json={"noteId": f"{notebookID}"})
     
