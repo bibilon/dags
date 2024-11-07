@@ -136,4 +136,4 @@ with main_dag:
     # Kết thúc DAG
     previous_task_group >> end
 # Đăng ký DAG chính để Airflow có thể nhận diện
-globals()['tinhphi'] = main_dag
+globals()['dynamic_task_groups_dag'] = main_dag
