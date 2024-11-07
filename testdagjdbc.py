@@ -64,6 +64,7 @@ for dag_name, schedule_interval, notebookid in dag_configs:
             op_kwargs={'nodepadID': f'{notebookid}'},
             dag=dag
         )
+	    
 	sensor_task =  CustomHttpSensor(
             task_id='check_status_notebook',
             method='GET',
