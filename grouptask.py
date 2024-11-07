@@ -96,7 +96,7 @@ with main_dag:
                 task_id='check_status_notebook',
                 method='GET',
                 http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
-                endpoint=f'/api/notebook/job/{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}',  # Thay {note_id} bằng ID của notebook Zeppelin
+                endpoint="/api/notebook/job/{{ task_instance.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}",  # Thay {note_id} bằng ID của notebook Zeppelin
                 headers={"Content-Type": "application/json"},
                 timeout=120,  # Thời gian chờ tối đa
                 poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
