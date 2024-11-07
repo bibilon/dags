@@ -9,7 +9,9 @@ from airflow.hooks.http_hook import HttpHook
 from airflow.exceptions import AirflowException
 # Hàm trigger notebook trong Zeppelin
 def trigger_notebook(nodepadID : str):
-    url = f"http://192.168.121.112:31818/api/notebook/job/{nodepadID}"
+    host_zeppelin = Variable.get("host_zeppelin")
+    port_zeppelin = Variable.get("port_zeppelin")
+    url = f"http://host_zeppelin:port_zeppelin/api/notebook/job/{nodepadID}"
     headers = { "Content-Type": "application/json"}
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
