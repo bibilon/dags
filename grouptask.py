@@ -30,13 +30,13 @@ def get_dynamic_dag_names():
 
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT dag_name FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn nếu cần
+        cursor.execute("SELECT dag_name, item_id FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn nếu cần
         dag_configs = cursor.fetchall()
     finally:
         cursor.close()
         connection.close()
 
-    return [(config[0]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
+    return [(config[0], config[1]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
 
 # Hàm để clone notebook và trả về ID mới
 def clone_notebook(original_notebook_id: str):
@@ -87,7 +87,7 @@ with main_dag:
 
     previous_task_group = start  # Dùng để giữ nhóm task trước đó
 
-    for dag_name in dag_configs:
+    for dag_name, item_id in dag_configs:
         with TaskGroup(group_id=dag_name) as task_group:
             clone_task = PythonOperator(
                 task_id='clone_notebook',
@@ -100,7 +100,7 @@ with main_dag:
             trigger_notebook_task = PythonOperator(
                 task_id='trigger_notebook',
                 python_callable=trigger_notebook,
-                op_kwargs={'nodepadID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
+                op_kwargs={'nodepadID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}", 'item_id': item_id},
                 dag=main_dag
             )
 
