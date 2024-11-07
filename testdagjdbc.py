@@ -4,6 +4,14 @@ from airflow.models import Variable
 from datetime import datetime
 import cx_Oracle
 from airflow.utils.task_group import TaskGroup
+from datetime import timedelta, datetime
+from airflow.operators.dummy import DummyOperator
+from airflow.operators.python_operator import BranchPythonOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
+from airflow.sensors.external_task_sensor import ExternalTaskSensor
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.empty import EmptyOperator
+from airflow.utils.task_group import TaskGroup
 # Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG
 def get_dynamic_dag_names():
     # Lấy các thông tin kết nối từ Airflow Variables
