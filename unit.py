@@ -57,7 +57,7 @@ class CustomHttpSensor(HttpSensor):
                 status = paragraph['status']
                 if status == 'ERROR':
                     raise AirflowException("One of the paragraphs has an error status")
-                elif status == 'RUNNING':
+                elif status != 'FINISHED':
                     all_finished = False
             return all_finished
         except Exception as e:
