@@ -27,7 +27,7 @@ def get_dynamic_dag_names():
 
     # Kết nối đến cơ sở dữ liệu sử dụng SID
     connection = cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
-    
+
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT dag_name FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn nếu cần
@@ -35,7 +35,7 @@ def get_dynamic_dag_names():
     finally:
         cursor.close()
         connection.close()
-    
+
     return [(config[0]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
 
 # Hàm để clone notebook và trả về ID mới
@@ -63,7 +63,7 @@ def delete_notebook(notebook_id: str):
         print(f"Notebook {notebook_id} deleted successfully.")
     else:
         raise Exception(f"Failed to delete notebook {notebook_id}")
-        
+
 # Lấy cấu hình DAG từ cơ sở dữ liệu
 dag_configs = get_dynamic_dag_names()
 
@@ -118,4 +118,22 @@ with main_dag:
             restart_interpreter = PythonOperator(
                 task_id='restart_interpreter_notebook',
                 python_callable=restart_interpreter_notebook,
-                op_kwargs={'notebookID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".tinhphi'] = main_dag
+                op_kwargs={'notebookID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
+                dag=main_dag
+            )
+            # Task xóa notebook sau khi thực hiện xong các tác vụ khác
+            delete_notebook_task = PythonOperator(
+                task_id='delete_notebook',
+                python_callable=delete_notebook,
+                op_kwargs={'notebook_id': "{{ task_instance.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
+                dag=main_dag
+            )
+            # Xác định thứ tự thực hiện trong TaskGroup
+            clone_task >> trigger_notebook_task >> sensor_task >> restart_interpreter >> delete_notebook_task
+        # Xác định thứ tự giữa các TaskGroup
+        previous_task_group >> task_group
+        previous_task_group = task_group  # Cập nhật task_group trước đó
+    # Kết thúc DAG
+    previous_task_group >> end
+# Đăng ký DAG chính để Airflow có thể nhận diện
+globals()['tinhphi'] = main_dag
