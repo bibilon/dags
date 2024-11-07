@@ -30,13 +30,13 @@ def get_dynamic_dag_names():
     
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT dag_name, schedule_interval, notebookid FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn nếu cần
+        cursor.execute("SELECT dag_name FROM DAG_NAMES")  # Thay đổi câu lệnh truy vấn nếu cần
         dag_configs = cursor.fetchall()
     finally:
         cursor.close()
         connection.close()
     
-    return [(config[0], config[1], config[2]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
+    return [(config[0]) for config in dag_configs]  # Trả về danh sách cấu hình DAG
 
 # Hàm để clone notebook và trả về ID mới
 def clone_notebook(original_notebook_id: str):
@@ -53,6 +53,17 @@ def clone_notebook(original_notebook_id: str):
     else:
         raise Exception("Failed to clone notebook")
 
+#xoa notebook
+def delete_notebook(notebook_id: str):
+    connection = BaseHook.get_connection('zeppelin_http_conn')
+    base_url = connection.get_uri() 
+    delete_url = f"{base_url}/api/notebook/{notebook_id}"
+    response = requests.delete(delete_url)
+    if response.status_code == 200:
+        print(f"Notebook {notebook_id} deleted successfully.")
+    else:
+        raise Exception(f"Failed to delete notebook {notebook_id}")
+        
 # Lấy cấu hình DAG từ cơ sở dữ liệu
 dag_configs = get_dynamic_dag_names()
 
@@ -75,12 +86,12 @@ with main_dag:
 
     previous_task_group = start  # Dùng để giữ nhóm task trước đó
 
-    for dag_name, schedule_interval, notebookid in dag_configs:
+    for dag_name in dag_configs:
         with TaskGroup(group_id=dag_name) as task_group:
             clone_task = PythonOperator(
                 task_id='clone_notebook',
                 python_callable=clone_notebook,
-                op_kwargs={'original_notebook_id': notebookid},
+                op_kwargs={'original_notebook_id': "2KEDD4EB3"},
                 dag=main_dag
             )
 
@@ -110,8 +121,15 @@ with main_dag:
                 dag=main_dag
             )
 
+            # Task xóa notebook sau khi thực hiện xong các tác vụ khác
+            delete_notebook_task = PythonOperator(
+                task_id='delete_notebook',
+                python_callable=delete_notebook,
+                op_kwargs={'notebook_id': "{{ task_instance.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
+                dag=main_dag
+            )
             # Xác định thứ tự thực hiện trong TaskGroup
-            clone_task >> trigger_notebook_task >> sensor_task >> restart_interpreter
+            clone_task >> trigger_notebook_task >> sensor_task >> restart_interpreter >> delete_notebook_task
 
         # Xác định thứ tự giữa các TaskGroup
         previous_task_group >> task_group
