@@ -79,6 +79,7 @@ main_dag = DAG(
     catchup=False
 )
 
+notebook = Variable.get("notebook")
 # Thêm các TaskGroup cho mỗi cấu hình từ cơ sở dữ liệu
 with main_dag:
     start = DummyOperator(task_id="start")
@@ -91,7 +92,7 @@ with main_dag:
             clone_task = PythonOperator(
                 task_id='clone_notebook',
                 python_callable=clone_notebook,
-                op_kwargs={'original_notebook_id': "2KEDD4EB3"},
+                op_kwargs={'original_notebook_id': f"{notebook}"},
                 dag=main_dag
             )
 
@@ -117,26 +118,4 @@ with main_dag:
             restart_interpreter = PythonOperator(
                 task_id='restart_interpreter_notebook',
                 python_callable=restart_interpreter_notebook,
-                op_kwargs={'notebookID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
-                dag=main_dag
-            )
-
-            # Task xóa notebook sau khi thực hiện xong các tác vụ khác
-            delete_notebook_task = PythonOperator(
-                task_id='delete_notebook',
-                python_callable=delete_notebook,
-                op_kwargs={'notebook_id': "{{ task_instance.xcom_pull(task_ids='" + dag_name + ".clone_notebook') }}"},
-                dag=main_dag
-            )
-            # Xác định thứ tự thực hiện trong TaskGroup
-            clone_task >> trigger_notebook_task >> sensor_task >> restart_interpreter >> delete_notebook_task
-
-        # Xác định thứ tự giữa các TaskGroup
-        previous_task_group >> task_group
-        previous_task_group = task_group  # Cập nhật task_group trước đó
-
-    # Kết thúc DAG
-    previous_task_group >> end
-
-# Đăng ký DAG chính để Airflow có thể nhận diện
-globals()['dynamic_task_groups_dag'] = main_dag
+                op_kwargs={'notebookID': "{{ ti.xcom_pull(task_ids='" + dag_name + ".tinhphi'] = main_dag
