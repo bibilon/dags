@@ -64,8 +64,7 @@ for dag_name, schedule_interval, notebookid in dag_configs:
             op_kwargs={'nodepadID': f'{notebookid}'},
             dag=dag
         )
-	    
-	sensor_task =  CustomHttpSensor(
+		sensor_task =  CustomHttpSensor(
             task_id='check_status_notebook',
             method='GET',
             http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
@@ -75,7 +74,7 @@ for dag_name, schedule_interval, notebookid in dag_configs:
             poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
             dag=dag,
         )
-	trigger_notebook_task >> sensor_task
+		trigger_notebook_task >> sensor_task
 
     # Đăng ký DAG vào globals để Airflow có thể nhận diện
     globals()[dag_name] = dag
