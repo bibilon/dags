@@ -19,7 +19,6 @@ def trigger_notebook(nodepadID : str):
         print("Notebook triggered successfully.")
     else:
         print(f"Failed to trigger notebook: {response.status_code}, {response.text}")
-        raise AirflowException(f"Failed to trigger notebook: {response.status_code}, {response.text}")
 # Restart interpreter notebook
 def restart_interpreter_notebook(notebookID: str):
     host_zeppelin = Variable.get("host_zeppelin")
