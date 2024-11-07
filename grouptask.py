@@ -64,15 +64,15 @@ with main_dag:
                 dag=main_dag
             )
 
-            sensor_task = HttpSensor(
+            sensor_task =  CustomHttpSensor(
                 task_id='check_status_notebook',
                 method='GET',
-                http_conn_id='zeppelin_http_conn',
-                endpoint=f'/api/notebook/job/{notebookid}',
+                http_conn_id='zeppelin_http_conn',  # Định nghĩa kết nối HTTP trong Airflow
+                endpoint=f'/api/notebook/job/{notebookid}',  # Thay {note_id} bằng ID của notebook Zeppelin
                 headers={"Content-Type": "application/json"},
-                timeout=120,
-                poke_interval=60,
-                dag=main_dag
+                timeout=120,  # Thời gian chờ tối đa
+                poke_interval=60,  # Khoảng thời gian giữa các lần kiểm tra
+                dag=dag,
             )
 
             restart_interpreter = PythonOperator(
