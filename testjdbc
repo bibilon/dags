@@ -29,7 +29,7 @@ def get_dynamic_dag_names():
     password = Variable.get("pass")
 
     # Kết nối với cơ sở dữ liệu Oracle thông qua JDBC
-    conn = jaydebeapi.connect(jdbc_driver, db_url, {'user': user, 'password': password}, jars=jdbc_driver_loc)
+    connection = jaydebeapi.connect(jdbc_driver, db_url, {'user': user, 'password': password}, jars=jdbc_driver_loc)
 
     
     try:
