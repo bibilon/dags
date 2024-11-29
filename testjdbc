@@ -13,20 +13,24 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.task_group import TaskGroup
 from unit import *
+import jaydebeapi
+
+
+
+
+
 # Hàm kết nối đến cơ sở dữ liệu Oracle và lấy tên DAG
 def get_dynamic_dag_names():
     # Lấy các thông tin kết nối từ Airflow Variables
-    host = Variable.get("server")
-    port = Variable.get("port")
-    sid = Variable.get("SID")
+    jdbc_driver = Variable.get("jdbc_driver")
+    jdbc_driver_loc = Variable.get("jdbc_driver_loc")
+    db_url = Variable.get("db_url")
     user = Variable.get("user")
     password = Variable.get("pass")
 
-    # Tạo DSN sử dụng các biến
-    dsn_tns = cx_Oracle.makedsn(host, port, sid=sid)
+    # Kết nối với cơ sở dữ liệu Oracle thông qua JDBC
+    conn = jaydebeapi.connect(jdbc_driver, db_url, {'user': user, 'password': password}, jars=jdbc_driver_loc)
 
-    # Kết nối đến cơ sở dữ liệu sử dụng SID
-    connection = cx_Oracle.connect(user=user, password=password, dsn=dsn_tns)
     
     try:
         cursor = connection.cursor()
