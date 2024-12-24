@@ -1,0 +1,44 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: hongtt
+  namespace: spark-jobs
+spec:
+  type: Scala
+  mode: cluster
+  image: bibilon89/spark-aws-delta:3.3.120
+  imagePullPolicy: Always
+  mainClass: "com.lifesup.test" # Thay bằng class chính của ứng dụng Scala
+  mainApplicationFile: local:///opt/spark/jars/test.jar
+  sparkVersion: "3.3.3"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.3.3
+    serviceAccount: spark
+    envVars:
+      oraclePassword: "12455"
+
+  executor:
+    instances: 2
+    coreRequest: "1000m"
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.3.3
+  deps:
+    jars:
+      - https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
+      - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar
+      - https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
+  sparkConf:
+    "spark.eventLog.enabled": "true"
+    "spark.hadoop.fs.s3a.connection.ssl.enabled": "true"
+    "spark.eventLog.dir": "s3a://spark-log/logs"
+    "spark.hadoop.fs.s3a.endpoint": "http://192.168.121.112:32490"
+    "spark.hadoop.fs.s3a.access.key": "GYHBUZJNWPBU84OFNB0W"
+    "spark.hadoop.fs.s3a.secret.key": "K8dRKBNKZZYcv28u4rwtdODulTrJM3Q16V3bx3bV"
