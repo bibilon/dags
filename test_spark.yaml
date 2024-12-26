@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: ${name}
+  name: test123
   namespace: spark-jobs
 spec:
   type: Scala
@@ -21,7 +21,7 @@ spec:
       version: 3.3.3
     serviceAccount: spark
     envVars:
-      oraclePassword: "${pass}"
+      oraclePassword: "12345"
 
   executor:
     instances: 2
