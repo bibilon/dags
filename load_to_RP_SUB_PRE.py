@@ -10,7 +10,24 @@ from airflow.models import Variable
 from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.empty import EmptyOperator
+from __future__ import annotations
 
+from collections.abc import Mapping
+from functools import cached_property
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+from kubernetes.client import CoreV1Api, CustomObjectsApi, models as k8s
+
+from airflow.exceptions import AirflowException
+from airflow.providers.cncf.kubernetes import pod_generator
+from airflow.providers.cncf.kubernetes.hooks.kubernetes import KubernetesHook, _load_body_to_dict
+from airflow.providers.cncf.kubernetes.kubernetes_helper_functions import add_unique_suffix
+from airflow.providers.cncf.kubernetes.operators.custom_object_launcher import CustomObjectLauncher
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.pod_generator import MAX_LABEL_LEN, PodGenerator
+from airflow.providers.cncf.kubernetes.utils.pod_manager import PodManager
+from airflow.utils.helpers import prune_dict
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -38,24 +55,7 @@ default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
 
-from collections.abc import Mapping
-from functools import cached_property
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
-
-from kubernetes.client import CoreV1Api, CustomObjectsApi, models as k8s
-
-from airflow.exceptions import AirflowException
-from airflow.providers.cncf.kubernetes import pod_generator
-from airflow.providers.cncf.kubernetes.hooks.kubernetes import KubernetesHook, _load_body_to_dict
-from airflow.providers.cncf.kubernetes.kubernetes_helper_functions import add_unique_suffix
-from airflow.providers.cncf.kubernetes.operators.custom_object_launcher import CustomObjectLauncher
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-from airflow.providers.cncf.kubernetes.pod_generator import MAX_LABEL_LEN, PodGenerator
-from airflow.providers.cncf.kubernetes.utils.pod_manager import PodManager
-from airflow.utils.helpers import prune_dict
 
 if TYPE_CHECKING:
     import jinja2
