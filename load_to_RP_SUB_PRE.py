@@ -1,3 +1,4 @@
+from __future__ import annotations
 from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.operators.dummy import DummyOperator
@@ -10,7 +11,7 @@ from airflow.models import Variable
 from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.empty import EmptyOperator
-from __future__ import annotations
+
 
 from collections.abc import Mapping
 from functools import cached_property
