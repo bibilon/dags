@@ -21,6 +21,18 @@ default_args = {
 }
 
 default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
+class CustomSparkKubernetesOperator(SparkKubernetesOperator):
+    def manage_template_specs(self):
+        print("application: ", self.application_file)
+        if self.application_file:
+            template_body = _load_body_to_dict(open(self.application_file))
+        elif self.template_spec:
+            template_body = self.template_spec
+        else:
+            raise AirflowException("either application_file or template_spec should be passed")
+        if "spark" not in template_body:
+            template_body = {"spark": template_body}
+        return template_body
 
 def decide_which_path(**kwargs):
     task_instance = kwargs['task_instance']
