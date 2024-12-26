@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     from airflow.utils.context import Context
 
 
-[docs]class CustomSparkKubernetesOperator(KubernetesPodOperator):
+class CustomSparkKubernetesOperator(KubernetesPodOperator):
     """
     Creates sparkApplication object in kubernetes cluster.
 
