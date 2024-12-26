@@ -81,7 +81,7 @@ with DAG(
     task_id='delete_spark_application_load_rp_sub_pre',
     namespace='spark-jobs',
     image='bitnami/kubectl:latest',
-    cmds=['kubectl', 'apply', '-f', 'rp_sub_pre.yaml', '-n', 'spark-jobs'],
+    cmds=['kubectl', 'delete', 'sparkapplication', 'spark-load-rp-sub-pre', '-n', 'spark-jobs'],
     get_logs=True,
     dag=dag
    )
