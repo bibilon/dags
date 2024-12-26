@@ -1,0 +1,32 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: ${name}
+  namespace: spark-jobs
+spec:
+  type: Scala
+  mode: cluster
+  image: bibilon89/spark-aws-delta:3.3.120
+  imagePullPolicy: Always
+  mainClass: "com.lifesup.test" # Thay bằng class chính của ứng dụng Scala
+  mainApplicationFile: local:///opt/spark/jars/test.jar
+  sparkVersion: "3.3.3"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.3.3
+    serviceAccount: spark
+    envVars:
+      oraclePassword: "${pass}"
+
+  executor:
+    instances: 2
+    coreRequest: "1000m"
+    coreLimit: "1000m"
+    memory: "4096m"
+    labels:
+      version: 3.3.3
