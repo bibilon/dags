@@ -356,7 +356,7 @@ def push_sensor_status(**kwargs):
     ti.xcom_push(key='return_value', value='success')
         
 with DAG(
-   'load_RP_SUB_PRE_dags',
+   'test_airflow_spark',
    default_args=default_args,
    description='simple dag',
    schedule_interval='45 3 * * *',
