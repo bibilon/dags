@@ -59,7 +59,7 @@ with DAG(
    start = DummyOperator(task_id="start")
    end = DummyOperator(task_id="end")
 
-   t1 = SparkKubernetesOperator(
+   t1 = CustomSparkKubernetesOperator(
        task_id='load_RP_SUB_PRE',
        retries=0,
        namespace='spark-jobs',
