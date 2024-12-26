@@ -94,12 +94,12 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
     :param random_name_suffix: If True, adds a random suffix to the pod name
     """
 
-[docs]    template_fields = ["application_file", "namespace", "template_spec", "kubernetes_conn_id"]
-[docs]    template_fields_renderers = {"template_spec": "py"}
-[docs]    template_ext = ("yaml", "yml", "json")
-[docs]    ui_color = "#f4a460"
+    template_fields = ["application_file", "namespace", "template_spec", "kubernetes_conn_id"]
+    template_fields_renderers = {"template_spec": "py"}
+    template_ext = ("yaml", "yml", "json")
+    ui_color = "#f4a460"
 
-[docs]    BASE_CONTAINER_NAME = "spark-kubernetes-driver"
+    BASE_CONTAINER_NAME = "spark-kubernetes-driver"
 
     def __init__(
         self,
@@ -163,7 +163,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
 
         super()._render_nested_template_fields(content, context, jinja_env, seen_oids)
 
-[docs]    def manage_template_specs(self):
+    def manage_template_specs(self):
         if self.application_file:
             try:
                 filepath = Path(self.application_file.rstrip()).resolve(strict=True)
@@ -183,7 +183,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
             template_body = {"spark": template_body}
         return template_body
 
-[docs]    def create_job_name(self):
+    def create_job_name(self):
         name = (
             self.name or self.template_body.get("spark", {}).get("metadata", {}).get("name") or self.task_id
         )
@@ -202,7 +202,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
         return ",".join([label_id + "=" + label for label_id, label in sorted(filtered_labels.items())])
 
     @staticmethod
-[docs]    def create_labels_for_pod(context: dict | None = None, include_try_number: bool = True) -> dict:
+    def create_labels_for_pod(context: dict | None = None, include_try_number: bool = True) -> dict:
         """
         Generate labels for the pod to track the pod in case of Operator crash.
 
@@ -243,7 +243,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
         return labels
 
     @cached_property
-[docs]    def pod_manager(self) -> PodManager:
+    def pod_manager(self) -> PodManager:
         return PodManager(kube_client=self.client)
 
     @staticmethod
@@ -251,11 +251,11 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
         return pod.metadata.labels["try_number"] == context["ti"].try_number
 
     @property
-[docs]    def template_body(self):
+    def template_body(self):
         """Templated body for CustomObjectLauncher."""
         return self.manage_template_specs()
 
-[docs]    def find_spark_job(self, context):
+    def find_spark_job(self, context):
         labels = self.create_labels_for_pod(context, include_try_number=False)
         label_selector = self._get_pod_identifying_label_string(labels) + ",spark-role=driver"
         pod_list = self.client.list_namespaced_pod(self.namespace, label_selector=label_selector).items
@@ -272,7 +272,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
             self.log.info("`try_number` of pod: %s", pod.metadata.labels["try_number"])
         return pod
 
-[docs]    def get_or_create_spark_crd(self, launcher: CustomObjectLauncher, context) -> k8s.V1Pod:
+    def get_or_create_spark_crd(self, launcher: CustomObjectLauncher, context) -> k8s.V1Pod:
         if self.reattach_on_restart:
             driver_pod = self.find_spark_job(context)
             if driver_pod:
@@ -283,7 +283,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
         )
         return driver_pod
 
-[docs]    def process_pod_deletion(self, pod, *, reraise=True):
+    def process_pod_deletion(self, pod, *, reraise=True):
         if pod is not None:
             if self.delete_on_termination:
                 self.log.info("Deleting spark job: %s", pod.metadata.name.replace("-driver", ""))
@@ -292,7 +292,7 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
                 self.log.info("skipping deleting spark job: %s", pod.metadata.name)
 
     @cached_property
-[docs]    def hook(self) -> KubernetesHook:
+    def hook(self) -> KubernetesHook:
         hook = KubernetesHook(
             conn_id=self.kubernetes_conn_id,
             in_cluster=self.in_cluster or self.template_body.get("kubernetes", {}).get("in_cluster", False),
@@ -304,14 +304,14 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
         return hook
 
     @cached_property
-[docs]    def client(self) -> CoreV1Api:
+    def client(self) -> CoreV1Api:
         return self.hook.core_v1_client
 
     @cached_property
-[docs]    def custom_obj_api(self) -> CustomObjectsApi:
+    def custom_obj_api(self) -> CustomObjectsApi:
         return CustomObjectsApi()
 
-[docs]    def execute(self, context: Context):
+    def execute(self, context: Context):
         self.name = self.create_job_name()
 
         self.log.info("Creating sparkApplication.")
@@ -327,18 +327,18 @@ class CustomSparkKubernetesOperator(KubernetesPodOperator):
 
         return super().execute(context=context)
 
-[docs]    def on_kill(self) -> None:
+    def on_kill(self) -> None:
         if self.launcher:
             self.log.debug("Deleting spark job for task %s", self.task_id)
             self.launcher.delete_spark_job()
 
-[docs]    def patch_already_checked(self, pod: k8s.V1Pod, *, reraise=True):
+    def patch_already_checked(self, pod: k8s.V1Pod, *, reraise=True):
         """Add an "already checked" annotation to ensure we don't reattach on retries."""
         pod.metadata.labels["already_checked"] = "True"
         body = PodGenerator.serialize_pod(pod)
         self.client.patch_namespaced_pod(pod.metadata.name, pod.metadata.namespace, body)
 
-[docs]    def dry_run(self) -> None:
+    def dry_run(self) -> None:
         """Print out the spark job that would be created by this operator."""
         print(prune_dict(self.launcher.body, mode="strict"))
 
