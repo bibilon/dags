@@ -51,7 +51,7 @@ with DAG(
        task_id='load_RP_SUB_PRE',
        retries=0,
        namespace='spark-jobs',
-       application_file="rp_sub_pre.yaml",
+       main_application_path="rp_sub_pre.yaml",
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
        dag=dag
