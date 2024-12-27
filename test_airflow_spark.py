@@ -57,7 +57,6 @@ default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
 # specific language governing permissions and limitations
 # under the License.
 
-class CustomSparkKubernetesOperator(SparkKubernetesOperator):
 
 
 def push_sensor_status(**kwargs):
@@ -77,7 +76,7 @@ with DAG(
    start = DummyOperator(task_id="start")
    end = DummyOperator(task_id="end")
 
-   t1 = CustomSparkKubernetesOperator(
+   t1 = SparkKubernetesOperator(
        task_id='load_RP_SUB_PRE',
        retries=0,
        namespace='spark-jobs',
