@@ -60,7 +60,16 @@ class CustomSparkKubernetesOperator(SparkKubernetesOperator):
     def manage_template_specs(self):
         print("appfile_day_nhe: ", self.application_file)
         if self.application_file:
-            template_body = _load_body_to_dict(open(self.application_file))
+            try:
+                filepath = Path(self.application_file.rstrip()).resolve(strict=True)
+            except (FileNotFoundError, OSError, RuntimeError, ValueError):
+                application_file_body = self.application_file
+            else:
+                application_file_body = filepath.read_text()
+            template_body = _load_body_to_dict(application_file_body)
+            if not isinstance(template_body, dict):
+                msg = f"application_file body can't transformed into the dictionary:\n{application_file_body}"
+                raise TypeError(msg)
         elif self.template_spec:
             template_body = self.template_spec
         else:
@@ -68,6 +77,7 @@ class CustomSparkKubernetesOperator(SparkKubernetesOperator):
         if "spark" not in template_body:
             template_body = {"spark": template_body}
         return template_body
+
 
 
 def push_sensor_status(**kwargs):
