@@ -58,7 +58,6 @@ default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
 # under the License.
 
 class CustomSparkKubernetesOperator(SparkKubernetesOperator):
-    @apply_defaults
     def __init__(
         self,
         *args, **kwargs
