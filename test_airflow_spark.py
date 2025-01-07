@@ -13,22 +13,6 @@ from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOpera
 from airflow.operators.empty import EmptyOperator
 
 
-from collections.abc import Mapping
-from functools import cached_property
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
-
-from kubernetes.client import CoreV1Api, CustomObjectsApi, models as k8s
-from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
-from airflow.exceptions import AirflowException
-from airflow.providers.cncf.kubernetes import pod_generator
-from airflow.providers.cncf.kubernetes.hooks.kubernetes import KubernetesHook, _load_body_to_dict
-from airflow.providers.cncf.kubernetes.kubernetes_helper_functions import add_unique_suffix
-from airflow.providers.cncf.kubernetes.operators.custom_object_launcher import CustomObjectLauncher
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-from airflow.providers.cncf.kubernetes.pod_generator import MAX_LABEL_LEN, PodGenerator
-from airflow.providers.cncf.kubernetes.utils.pod_manager import PodManager
-from airflow.utils.helpers import prune_dict
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -56,28 +40,6 @@ default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-class CustomSparkKubernetesOperator(SparkKubernetesOperator):
-    def manage_template_specs(self):
-        print("appfile_day_nhe: ", self.application_file)
-        if self.application_file:
-            try:
-                filepath = Path(self.application_file.rstrip()).resolve(strict=True)
-            except (FileNotFoundError, OSError, RuntimeError, ValueError):
-                application_file_body = self.application_file
-            else:
-                application_file_body = filepath.read_text()
-            template_body = _load_body_to_dict(application_file_body)
-            if not isinstance(template_body, dict):
-                msg = f"application_file body can't transformed into the dictionary:\n{application_file_body}"
-                raise TypeError(msg)
-        elif self.template_spec:
-            template_body = self.template_spec
-        else:
-            raise AirflowException("either application_file or template_spec should be passed")
-        if "spark" not in template_body:
-            template_body = {"spark": template_body}
-        return template_body
-
 
 
 def push_sensor_status(**kwargs):
