@@ -104,6 +104,7 @@ with DAG(
        application_file="test-spark.yaml",
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
+       xcom_sidecar=True,
        dag=dag
    )
    start >> t1 >> end
