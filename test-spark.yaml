@@ -6,7 +6,7 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: bibilon89/spark-aws-delta:3.3.120
+  image: hongtt11/spark-aws-delta:3.3.202
   imagePullPolicy: Always
   mainClass: "com.lifesup.test" # Thay bằng class chính của ứng dụng Scala
   mainApplicationFile: local:///opt/spark/jars/test.jar
