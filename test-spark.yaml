@@ -9,7 +9,7 @@ spec:
   image: hongtt11/spark-aws-delta:3.3.202
   imagePullPolicy: Always
   mainClass: "com.lifesup.test" # Thay bằng class chính của ứng dụng Scala
-  mainApplicationFile: local:///opt/spark/jars/test.jar
+  mainApplicationFile: local:///opt/spark/jars/test123.jar
   sparkVersion: "3.3.3"
   restartPolicy:
     type: Never
