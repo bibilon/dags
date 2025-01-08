@@ -20,7 +20,7 @@ dag = DAG(
 # Xóa các file log đã được tạo hơn 1 ngày trước
 delete_logs = BashOperator(
     task_id='delete_old_logs',
-    bash_command="find /usr/local/airflow/logs -type f -mtime +1 -exec rm -f {} \;",
+    bash_command="find /opt/airflow/logs -type f -mtime +1 -exec rm -f {} \;",
     dag=dag,
 )
 
