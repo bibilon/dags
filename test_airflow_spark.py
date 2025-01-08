@@ -63,7 +63,7 @@ with DAG(
        task_id='load_RP_SUB_PRE',
        retries=0,
        namespace='spark-jobs',
-       application_file="/opt/airflow/dags/repo/test-spark.yaml",
+       code_path="/opt/airflow/dags/repo/test-spark.yaml",
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
        dag=dag
