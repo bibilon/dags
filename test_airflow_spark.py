@@ -102,7 +102,7 @@ with DAG(
     task_id='delete_spark_application',
     namespace=namespace,
     image='bitnami/kubectl:latest',
-    cmds=['kubectl', 'delete', 'sparkapplication', f'{name_application}', '-n', 'spark-jobs'],
+    cmds=['kubectl', 'delete', 'sparkapplication', f'{name_application}', '-n', f'{namespace}'],
     get_logs=True,
     dag=dag
     )
