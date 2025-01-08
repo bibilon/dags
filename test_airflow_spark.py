@@ -12,7 +12,7 @@ from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -26,7 +26,7 @@ spark_template_spec = {
     "apiVersion": "sparkoperator.k8s.io/v1beta2",
     "kind": "SparkApplication",
     "metadata": {
-        "name": "spark-test1",
+        "name": "spark-test11",
         "namespace": "spark-jobs",
     },
     "spec": {
@@ -80,7 +80,7 @@ with DAG(
    end = DummyOperator(task_id="end")
 
    t1 = SparkKubernetesOperator(
-       task_id='load_RP_SUB_PRE',
+       task_id='trigger_job_run',
        retries=0,
        namespace='spark-jobs',
        application_file=spark_template_spec,
@@ -89,10 +89,18 @@ with DAG(
        dag=dag
    )
    spark_sensor_1 = SparkKubernetesSensor(
-    task_id='spark_sensor_spark_load_rp_sub_pre',
+    task_id='check_status_job',
     namespace='spark-jobs',
     application_name='spark-test1',
     kubernetes_conn_id='myk8s',
     dag=dag
    )
-   start >> t1 >> spark_sensor_1 >> end
+   delete_task = KubernetesPodOperator(
+    task_id='delete_spark_application',
+    namespace='spark-jobs',
+    image='bitnami/kubectl:latest',
+    cmds=['kubectl', 'delete', 'sparkapplication', 'spark-test1', '-n', 'spark-jobs'],
+    get_logs=True,
+    dag=dag
+    )
+   start >> t1 >> spark_sensor_1 >>  delete_task >> end
