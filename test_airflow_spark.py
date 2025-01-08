@@ -22,12 +22,15 @@ default_args = {
     'retries': 1
 }
 
+name_application = "spark-test11"
+namespace = "spark-jobs"
+oraclePassword = "123"
 spark_template_spec = {
     "apiVersion": "sparkoperator.k8s.io/v1beta2",
     "kind": "SparkApplication",
     "metadata": {
-        "name": "spark-test11",
-        "namespace": "spark-jobs",
+        "name": f"{name_application}",
+        "namespace": f"{namespace}",
     },
     "spec": {
         "type": "Scala",
@@ -45,7 +48,7 @@ spark_template_spec = {
             "labels": {"version": "3.3.3"},
             "serviceAccount": "spark",
             "envVars": {
-                "oraclePassword": "12345",
+                "oraclePassword": f"{oraclePassword}",
             },
         },
         "executor": {
@@ -82,7 +85,7 @@ with DAG(
    t1 = SparkKubernetesOperator(
        task_id='trigger_job_run',
        retries=0,
-       namespace='spark-jobs',
+       namespace=namespace,
        application_file=spark_template_spec,
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
@@ -90,16 +93,16 @@ with DAG(
    )
    spark_sensor_1 = SparkKubernetesSensor(
     task_id='check_status_job',
-    namespace='spark-jobs',
-    application_name='spark-test1',
+    namespace=namespace,
+    application_name=name_application,
     kubernetes_conn_id='myk8s',
     dag=dag
    )
    delete_task = KubernetesPodOperator(
     task_id='delete_spark_application',
-    namespace='spark-jobs',
+    namespace=namespace,
     image='bitnami/kubectl:latest',
-    cmds=['kubectl', 'delete', 'sparkapplication', 'spark-test1', '-n', 'spark-jobs'],
+    cmds=['kubectl', 'delete', 'sparkapplication', f'{name_application}', '-n', 'spark-jobs'],
     get_logs=True,
     dag=dag
     )
