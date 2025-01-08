@@ -22,6 +22,42 @@ default_args = {
     'retries': 1
 }
 
+spark_template_spec = {
+    "apiVersion": "sparkoperator.k8s.io/v1beta2",
+    "kind": "SparkApplication",
+    "metadata": {
+        "name": "spark-test",
+        "namespace": "spark-jobs",
+    },
+    "spec": {
+        "type": "Scala",
+        "mode": "cluster",
+        "image": "hongtt11/spark-aws-delta:3.3.202",
+        "imagePullPolicy": "Always",
+        "mainClass": "com.lifesup.test",
+        "mainApplicationFile": "local:///opt/spark/jars/test123.jar",
+        "sparkVersion": "3.3.3",
+        "restartPolicy": {"type": "Never"},
+        "driver": {
+            "cores": 1,
+            "coreLimit": "1000m",
+            "memory": "4096m",
+            "labels": {"version": "3.3.3"},
+            "serviceAccount": "spark",
+            "envVars": {
+                "oraclePassword": "12345",
+            },
+        },
+        "executor": {
+            "instances": 2,
+            "coreRequest": "1000m",
+            "coreLimit": "1000m",
+            "memory": "4096m",
+            "labels": {"version": "3.3.3"},
+        },
+    },
+}
+
 default_params = {"start_date": "2022-01-01", "end_date": "2022-12-01"}
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -63,7 +99,7 @@ with DAG(
        task_id='load_RP_SUB_PRE',
        retries=0,
        namespace='spark-jobs',
-       application_file="/opt/airflow/dags/repo/test-spark.yaml",
+       template_spec=spark_template_spec,
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
        dag=dag
