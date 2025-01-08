@@ -17,7 +17,7 @@ dag = DAG(
 )
 task = BashOperator(
     task_id='find_and_list_old_files',
-    bash_command='find /opt/airflow/logs -type f -mtime 1 -exec echo {} \;',
+    bash_command='find /opt/airflow/logs -type f -mtime +1 -exec echo {} \;',
 )
 
 # Câu lệnh Bash để xóa log cũ
