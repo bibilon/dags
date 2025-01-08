@@ -11,7 +11,7 @@ from airflow.models import Variable
 from kubernetes.client import models as k8s
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.empty import EmptyOperator
-
+from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
 default_args = {
     'owner': 'airflow',
@@ -26,7 +26,7 @@ spark_template_spec = {
     "apiVersion": "sparkoperator.k8s.io/v1beta2",
     "kind": "SparkApplication",
     "metadata": {
-        "name": "spark-test",
+        "name": "spark-test1",
         "namespace": "spark-jobs",
     },
     "spec": {
@@ -88,4 +88,13 @@ with DAG(
        do_xcom_push=True,
        dag=dag
    )
-   start >> t1 >> end
+   spark_sensor_1 = SparkKubernetesSensor(
+    task_id='spark_sensor_spark_load_rp_sub_pre',
+    namespace='spark-jobs',
+    application_name='spark-test1',
+    kubernetes_conn_id='myk8s',
+    on_success_callback=on_success_callback,
+    do_xcom_push=True, 
+    dag=dag
+   )
+   start >> t1 >> spark_sensor_1 >> end
