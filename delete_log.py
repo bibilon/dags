@@ -15,6 +15,10 @@ dag = DAG(
     start_date=datetime(2023, 1, 1),
     catchup=False,
 )
+task = BashOperator(
+    task_id='find_and_list_old_files',
+    bash_command='find /usr/local/airflow/logs -type f -mtime +1 -exec echo {} \;',
+)
 
 # Câu lệnh Bash để xóa log cũ
 # Xóa các file log đã được tạo hơn 1 ngày trước
@@ -24,4 +28,4 @@ delete_logs = BashOperator(
     dag=dag,
 )
 
-delete_logs
+task >> delete_logs
