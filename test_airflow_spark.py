@@ -93,8 +93,6 @@ with DAG(
     namespace='spark-jobs',
     application_name='spark-test1',
     kubernetes_conn_id='myk8s',
-    on_success_callback=on_success_callback,
-    do_xcom_push=True, 
     dag=dag
    )
    start >> t1 >> spark_sensor_1 >> end
