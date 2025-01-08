@@ -102,6 +102,7 @@ with DAG(
        template_spec=spark_template_spec,
        kubernetes_conn_id="myk8s",
        do_xcom_push=True,
+       is_delete_operator_pod=True,
        dag=dag
    )
    start >> t1 >> end
